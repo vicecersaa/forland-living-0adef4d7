@@ -1,8 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { getProduct, products } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import { Heart, Minus, Plus } from "lucide-react";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$id")({
   loader: ({ params }) => {
@@ -45,6 +46,8 @@ function ProductPage() {
   const [size, setSize] = useState("Queen");
   const [color, setColor] = useState("Fog");
   const [qty, setQty] = useState(1);
+  const { add } = useCart();
+  const navigate = useNavigate();
   const related = products.filter((p) => p.id !== product.id).slice(0, 3);
 
   return (
@@ -132,7 +135,13 @@ function ProductPage() {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
-              <button className="flex-1 bg-foreground py-4 text-[0.78rem] tracking-[0.24em] uppercase text-background transition-opacity hover:opacity-90">
+              <button
+                onClick={() => {
+                  add({ id: product.id, size, color, qty });
+                  navigate({ to: "/cart" });
+                }}
+                className="flex-1 bg-foreground py-4 text-[0.78rem] tracking-[0.24em] uppercase text-background transition-opacity hover:opacity-90"
+              >
                 Add to Bag
               </button>
               <button aria-label="Save to wishlist" className="grid place-items-center border hairline px-4 hover:border-foreground">

@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Menu, Search, User, Heart, ShoppingBag, X } from "lucide-react";
+import { useCart } from "@/lib/cart";
 
 const links = [
   { to: "/shop", label: "Shop" },
@@ -16,6 +17,7 @@ export function SiteNav() {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onHome = pathname === "/";
+  const { count } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -72,12 +74,18 @@ export function SiteNav() {
           <IconBtn label="Search"><Search className="h-[18px] w-[18px]" /></IconBtn>
           <IconBtn label="Account" className="hidden sm:inline-flex"><User className="h-[18px] w-[18px]" /></IconBtn>
           <IconBtn label="Wishlist" className="hidden sm:inline-flex"><Heart className="h-[18px] w-[18px]" /></IconBtn>
-          <IconBtn label="Cart">
+          <Link
+            to="/cart"
+            aria-label="Cart"
+            className="inline-flex h-10 w-10 items-center justify-center opacity-80 transition-opacity duration-500 hover:opacity-100"
+          >
             <span className="relative">
               <ShoppingBag className="h-[18px] w-[18px]" />
-              <span className="absolute -right-2 -top-1 rounded-full bg-current px-1 text-[9px] leading-[14px] text-background">0</span>
+              <span className="absolute -right-2 -top-1 rounded-full bg-current px-1 text-[9px] leading-[14px] text-background">
+                {count}
+              </span>
             </span>
-          </IconBtn>
+          </Link>
         </div>
       </div>
 

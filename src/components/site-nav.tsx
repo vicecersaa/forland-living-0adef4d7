@@ -4,8 +4,8 @@ import { Menu, Search, User, Heart, ShoppingBag, X } from "lucide-react";
 
 const links = [
   { to: "/shop", label: "Shop" },
-  { to: "/shop", label: "Beds", search: { category: "Beds" } },
-  { to: "/shop", label: "Mattresses", search: { category: "Mattresses" } },
+  { to: "/shop", label: "Beds" },
+  { to: "/shop", label: "Mattresses" },
   { to: "/journal", label: "Journal" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },

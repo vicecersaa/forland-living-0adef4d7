@@ -91,10 +91,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Timeless beds and mattresses, thoughtfully crafted for a slower, softer way of living.",
+          "Forland Living crafts premium beds and mattresses for a life of quiet comfort. Timeless design, honest materials, considered craftsmanship.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Forland Living — Quiet Luxury Beds & Mattresses" },
+      { name: "twitter:description", content: "Forland Living crafts premium beds and mattresses for a life of quiet comfort. Timeless design, honest materials, considered craftsmanship." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b86e948f-83d6-4ddb-84d5-4e070128a8fc/id-preview-e49736b0--685301c9-5984-42af-9591-bc4364e2daa0.lovable.app-1784022455715.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b86e948f-83d6-4ddb-84d5-4e070128a8fc/id-preview-e49736b0--685301c9-5984-42af-9591-bc4364e2daa0.lovable.app-1784022455715.png" },
     ],
     links: [
       {

@@ -29,14 +29,14 @@ function JournalPage() {
   const [feature, ...rest] = posts;
   return (
     <>
-      <header className="border-b hairline pt-40 pb-16 lg:pt-56 lg:pb-20">
+      <header className="border-b hairline pt-24 pb-16 lg:pt-56 lg:pb-20">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
           <div className="eyebrow">The Journal</div>
           <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-7xl">Field notes on quiet living.</h1>
         </div>
       </header>
 
-      <section className="mx-auto max-w-[1600px] px-6 py-20 lg:px-12">
+      <section className="mx-auto max-w-[1600px] px-6 py-12 lg:px-12">
         <a href="#" className="group grid gap-10 md:grid-cols-2 md:gap-16">
           <div className="overflow-hidden">
             <img src={feature.img} alt={feature.title} loading="lazy" className="aspect-[4/3] w-full object-cover transition-transform duration-[1400ms] group-hover:scale-[1.02]" />
@@ -56,7 +56,7 @@ function JournalPage() {
       </section>
 
       <section className="border-t hairline">
-        <div className="mx-auto grid max-w-[1600px] gap-x-10 gap-y-20 px-6 py-24 md:grid-cols-2 lg:grid-cols-3 lg:px-12">
+        <div className="mx-auto grid max-w-[1600px] gap-x-10 gap-y-20 px-6 py-14 md:grid-cols-2 lg:grid-cols-3 lg:px-12">
           {rest.map((p) => (
             <a key={p.n} href="#" className="group block">
               <div className="overflow-hidden">

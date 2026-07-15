@@ -51,7 +51,7 @@ function ShopPage() {
 
   return (
     <>
-      <header className="border-b hairline pt-32 pb-16 lg:pt-40 lg:pb-24">
+      <header className="border-b hairline pt-24 pb-16 lg:pt-40 lg:pb-24">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
           <div className="eyebrow">The Catalogue</div>
           <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-7xl">All Objects</h1>
@@ -177,7 +177,7 @@ function ShopPage() {
             </div>
 
             {filtered.length === 0 ? (
-              <div className="py-24 text-center text-sm text-muted-foreground">
+              <div className="py-14 text-center text-sm text-muted-foreground">
                 No objects match these filters.
               </div>
             ) : view === "grid" ? (
@@ -196,7 +196,7 @@ function ShopPage() {
           </section>
         </div>
 
-        <div className="mt-24 flex flex-col items-center justify-center gap-4 border-t hairline pt-10 text-sm text-muted-foreground">
+        <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t hairline pt-10 text-sm text-muted-foreground">
           <span>Showing {filtered.length} of {products.length}</span>
           <Link to="/contact" className="text-foreground border-b hairline pb-0.5 hover:border-foreground">
             Speak with an atelier advisor

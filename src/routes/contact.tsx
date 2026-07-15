@@ -14,8 +14,8 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   return (
-    <section className="mx-auto max-w-[1400px] px-6 pt-40 pb-32 lg:px-12 lg:pt-56">
-      <div className="grid gap-16 lg:grid-cols-[1fr_1.2fr] lg:gap-24">
+    <section className="mx-auto max-w-[1400px] px-6 pt-24 pb-16 lg:px-12 lg:pt-56">
+      <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-24">
         <div>
           <div className="eyebrow">Correspondence</div>
           <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-6xl">Write to the house.</h1>
@@ -24,7 +24,7 @@ function ContactPage() {
             by appointment.
           </p>
 
-          <div className="mt-16 space-y-10 text-sm">
+          <div className="mt-12 space-y-10 text-sm">
             <div>
               <div className="eyebrow mb-3">Atelier</div>
               <div className="font-serif text-xl">Rådhusgata 14, 0151 Oslo</div>

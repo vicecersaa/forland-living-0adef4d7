@@ -58,7 +58,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-20 flex flex-col-reverse items-start justify-between gap-6 border-t hairline pt-8 text-xs text-muted-foreground md:flex-row md:items-center">
+        <div className="mt-10 flex flex-col-reverse items-start justify-between gap-6 border-t hairline pt-8 text-xs text-muted-foreground md:flex-row md:items-center">
           <div>© {new Date().getFullYear()} Forland Living. All rights reserved.</div>
           <div className="flex gap-6">
             <a href="#" className="hover:text-foreground">Privacy</a>

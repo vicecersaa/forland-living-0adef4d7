@@ -41,7 +41,7 @@ export function SiteNav() {
           : "border-b border-transparent bg-transparent text-background",
       ].join(" ")}
     >
-      <div className="mx-auto grid h-16 max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:h-20 lg:px-12">
+      <div className="mx-auto grid h-16 max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-2 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:px-12">
         <button
           type="button"
           aria-label="Open menu"
@@ -65,19 +65,19 @@ export function SiteNav() {
 
         <Link
           to="/"
-          className="justify-self-center font-serif text-[1.35rem] leading-none tracking-[0.32em] sm:text-2xl"
+          className="justify-self-center font-serif text-[1.05rem] leading-none tracking-[0.28em] sm:text-2xl sm:tracking-[0.32em]"
         >
           FORLAND
         </Link>
 
-        <div className="flex items-center gap-1 justify-self-end sm:gap-2">
-          <IconBtn label="Search"><Search className="h-[18px] w-[18px]" /></IconBtn>
+        <div className="flex items-center justify-self-end sm:gap-2">
+          <IconBtn label="Search" className="hidden sm:inline-flex"><Search className="h-[18px] w-[18px]" /></IconBtn>
           <IconBtn label="Account" className="hidden sm:inline-flex"><User className="h-[18px] w-[18px]" /></IconBtn>
           <IconBtn label="Wishlist" className="hidden sm:inline-flex"><Heart className="h-[18px] w-[18px]" /></IconBtn>
           <Link
             to="/cart"
             aria-label="Cart"
-            className="inline-flex h-10 w-10 items-center justify-center opacity-80 transition-opacity duration-500 hover:opacity-100"
+            className="-mr-2 inline-flex h-10 w-10 items-center justify-center opacity-80 transition-opacity duration-500 hover:opacity-100 sm:mr-0"
           >
             <span className="relative">
               <ShoppingBag className="h-[18px] w-[18px]" />

@@ -19,7 +19,7 @@ function CartPage() {
   const total = subtotal + shipping;
 
   return (
-    <div className="mx-auto max-w-[1600px] px-6 pt-28 pb-32 lg:px-12 lg:pt-40">
+    <div className="mx-auto max-w-[1600px] px-6 pt-24 pb-16 lg:px-12 lg:pt-40">
       <div className="max-w-2xl">
         <div className="eyebrow">Step 01 · Bag</div>
         <h1 className="mt-4 font-serif text-5xl leading-[1.05] md:text-6xl">Your Bag</h1>
@@ -29,7 +29,7 @@ function CartPage() {
       </div>
 
       {resolved.length === 0 ? (
-        <div className="mt-24 border-t hairline pt-24 text-center">
+        <div className="mt-12 border-t hairline pt-24 text-center">
           <p className="font-serif text-2xl text-foreground/70">Your bag is empty.</p>
           <Link
             to="/shop"
@@ -39,7 +39,7 @@ function CartPage() {
           </Link>
         </div>
       ) : (
-        <div className="mt-16 grid gap-16 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
+        <div className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
           <ul className="border-t hairline">
             {resolved.map((item, i) => (
               <li key={`${item.id}-${item.size}-${item.color}`} className="grid grid-cols-[120px_1fr_auto] gap-6 border-b hairline py-8 sm:grid-cols-[160px_1fr_auto] sm:gap-8">

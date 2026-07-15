@@ -79,8 +79,8 @@ function Hero() {
 
 function Philosophy() {
   return (
-    <section className="mx-auto max-w-[1600px] px-6 py-32 lg:px-12 lg:py-48">
-      <div className="grid gap-16 md:grid-cols-12 md:gap-24">
+    <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:py-48">
+      <div className="grid gap-10 md:grid-cols-12 md:gap-24">
         <div className="md:col-span-5 md:sticky md:top-32 md:self-start">
           <div className="eyebrow">Our Philosophy</div>
           <h2 className="mt-8 font-serif text-4xl leading-[1.05] md:text-6xl">
@@ -123,7 +123,7 @@ function Collections() {
   ];
   return (
     <section className="border-t hairline bg-surface">
-      <div className="mx-auto max-w-[1600px] px-6 py-24 lg:px-12 lg:py-32">
+      <div className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <div className="eyebrow">Collections</div>
@@ -136,7 +136,7 @@ function Collections() {
             View All
           </Link>
         </div>
-        <div className="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((c) => (
             <Link key={c.id} to="/shop" className="group block">
               <div className="overflow-hidden aspect-[3/4] bg-background">
@@ -167,8 +167,8 @@ function Craftsmanship() {
     { n: "04", t: "Built to Age", c: "Repairable joinery. A 25-year structural guarantee." },
   ];
   return (
-    <section className="mx-auto max-w-[1600px] px-6 py-32 lg:px-12 lg:py-48">
-      <div className="grid gap-20 lg:grid-cols-2 lg:gap-24">
+    <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:py-48">
+      <div className="grid gap-12 lg:grid-cols-2 lg:gap-24">
         <div className="order-2 lg:order-1">
           <div className="eyebrow">Craftsmanship</div>
           <h2 className="mt-6 font-serif text-4xl leading-[1.05] md:text-5xl">
@@ -215,7 +215,7 @@ function MaterialStory() {
             className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
-        <div className="flex items-center px-6 py-24 lg:px-16 lg:py-32">
+        <div className="flex items-center px-6 py-14 lg:px-16 lg:py-32">
           <div className="max-w-lg">
             <div className="eyebrow">Material Study — N° 03</div>
             <h2 className="mt-6 font-serif text-4xl leading-[1.05] md:text-5xl">
@@ -241,7 +241,7 @@ function MaterialStory() {
 
 function BestSellers() {
   return (
-    <section className="mx-auto max-w-[1600px] px-6 py-24 lg:px-12 lg:py-32">
+    <section className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <div className="eyebrow">Considered Objects</div>
@@ -254,7 +254,7 @@ function BestSellers() {
           Shop All
         </Link>
       </div>
-      <div className="mt-16 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-12 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}
@@ -266,12 +266,12 @@ function BestSellers() {
 function Gallery() {
   return (
     <section className="border-t hairline bg-surface">
-      <div className="mx-auto max-w-[1600px] px-6 py-24 lg:px-12 lg:py-32">
+      <div className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
         <div className="max-w-xl">
           <div className="eyebrow">A House, Photographed</div>
           <h2 className="mt-4 font-serif text-4xl md:text-5xl">Rooms that breathe.</h2>
         </div>
-        <div className="mt-16 grid gap-6 md:grid-cols-12 md:gap-8">
+        <div className="mt-12 grid gap-6 md:grid-cols-12 md:gap-8">
           <img src={gallery1} alt="A serene minimalist bedroom" loading="lazy" className="aspect-[4/5] w-full object-cover md:col-span-5" />
           <div className="grid gap-6 md:col-span-7 md:gap-8">
             <img src={philosophyImg} alt="A bedroom with an arched window" loading="lazy" className="aspect-[16/9] w-full object-cover" />
@@ -293,9 +293,9 @@ function Reviews() {
     { q: "You feel the hours in it. That's the compliment I can pay.", a: "Aiko S. — Kyoto" },
   ];
   return (
-    <section className="mx-auto max-w-[1400px] px-6 py-32 text-center lg:px-12 lg:py-48">
+    <section className="mx-auto max-w-[1400px] px-6 py-16 text-center lg:px-12 lg:py-48">
       <div className="eyebrow">From the House</div>
-      <div className="mt-14 grid gap-16 md:grid-cols-3">
+      <div className="mt-10 grid gap-10 md:grid-cols-3">
         {quotes.map((r) => (
           <figure key={r.a} className="mx-auto max-w-sm">
             <blockquote className="font-serif text-2xl leading-[1.35] md:text-[1.6rem]">
@@ -314,7 +314,7 @@ function Reviews() {
 function Newsletter() {
   return (
     <section className="border-t hairline bg-foreground text-background">
-      <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-24 text-center lg:py-32">
+      <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-14 text-center lg:py-32">
         <div className="eyebrow !text-background/60">Correspondence</div>
         <h2 className="mt-6 font-serif text-3xl leading-[1.15] md:text-5xl">
           Occasional letters on rest, rooms, and the making of quiet things.

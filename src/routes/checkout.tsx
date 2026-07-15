@@ -33,7 +33,7 @@ function CheckoutPage() {
 
   if (placed) {
     return (
-      <div className="mx-auto grid min-h-[80vh] max-w-2xl place-items-center px-6 py-40 text-center">
+      <div className="mx-auto grid min-h-[80vh] max-w-2xl place-items-center px-6 py-12 text-center">
         <div>
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border hairline">
             <Check className="h-5 w-5" />
@@ -56,7 +56,7 @@ function CheckoutPage() {
 
   if (resolved.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-40 text-center">
+      <div className="mx-auto max-w-2xl px-6 py-12 text-center">
         <h1 className="font-serif text-4xl">Your bag is empty.</h1>
         <p className="mt-4 text-foreground/70">Add a piece before proceeding to checkout.</p>
         <button
@@ -70,13 +70,13 @@ function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1600px] px-6 pt-28 pb-32 lg:px-12 lg:pt-40">
+    <div className="mx-auto max-w-[1600px] px-6 pt-24 pb-16 lg:px-12 lg:pt-40">
       <div className="max-w-2xl">
         <div className="eyebrow">Step 02 · Checkout</div>
         <h1 className="mt-4 font-serif text-5xl leading-[1.05] md:text-6xl">Checkout</h1>
       </div>
 
-      <form onSubmit={onSubmit} className="mt-16 grid gap-16 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
+      <form onSubmit={onSubmit} className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
         <div className="space-y-14">
           <Section title="Contact">
             <Field label="Email" name="email" type="email" required />

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/about")({
 function AboutPage() {
   return (
     <>
-      <section className="mx-auto max-w-4xl px-6 pt-40 pb-24 text-center lg:pt-56">
+      <section className="mx-auto max-w-4xl px-6 pt-24 pb-14 text-center lg:pt-56">
         <div className="eyebrow">Est. 2014 — Oslo</div>
         <h1 className="mt-8 font-serif text-5xl leading-[1.05] md:text-7xl">
           A quiet house of considered comfort.
@@ -29,11 +29,11 @@ function AboutPage() {
         </p>
       </section>
 
-      <section className="mx-auto max-w-[1600px] px-6 pb-32 lg:px-12">
+      <section className="mx-auto max-w-[1600px] px-6 pb-16 lg:px-12">
         <img src={philosophyImg} alt="" loading="lazy" className="aspect-[21/9] w-full object-cover" />
       </section>
 
-      <section className="mx-auto grid max-w-[1200px] gap-16 px-6 pb-32 md:grid-cols-2 md:gap-24">
+      <section className="mx-auto grid max-w-[1200px] gap-10 px-6 pb-16 md:grid-cols-2 md:gap-24">
         <div>
           <div className="eyebrow">Our Practice</div>
           <h2 className="mt-6 font-serif text-4xl leading-tight">Slow, by design.</h2>
@@ -57,7 +57,7 @@ function AboutPage() {
       <section className="border-y hairline bg-surface">
         <div className="mx-auto grid max-w-[1600px] gap-0 lg:grid-cols-2">
           <img src={craftImg} alt="" loading="lazy" className="aspect-[4/5] w-full object-cover lg:aspect-auto" />
-          <div className="flex items-center px-6 py-24 lg:px-16">
+          <div className="flex items-center px-6 py-14 lg:px-16">
             <div className="max-w-md">
               <div className="eyebrow">Materials</div>
               <h2 className="mt-6 font-serif text-4xl leading-tight">The five we trust.</h2>
@@ -80,7 +80,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 py-32 text-center lg:py-40">
+      <section className="mx-auto max-w-3xl px-6 py-16 text-center lg:py-40">
         <img src={materialImg} alt="" loading="lazy" className="mx-auto mb-14 aspect-[4/3] w-40 object-cover" />
         <blockquote className="font-serif text-3xl leading-[1.25] md:text-4xl">
           "Luxury, to us, is the absence of noise — in the room, in the object, and in the hand

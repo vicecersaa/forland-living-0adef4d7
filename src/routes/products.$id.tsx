@@ -23,7 +23,7 @@ export const Route = createFileRoute("/products/$id")({
       : [{ title: "Unavailable" }, { name: "robots", content: "noindex" }],
   }),
   notFoundComponent: () => (
-    <div className="mx-auto max-w-xl px-6 py-40 text-center">
+    <div className="mx-auto max-w-xl px-6 py-12 text-center">
       <h1 className="font-serif text-4xl">This piece is no longer listed.</h1>
       <Link to="/shop" className="mt-8 inline-block border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase">
         Return to Shop
@@ -52,7 +52,7 @@ function ProductPage() {
 
   return (
     <>
-      <div className="mx-auto max-w-[1600px] px-6 pt-28 lg:px-12 lg:pt-32">
+      <div className="mx-auto max-w-[1600px] px-6 pt-24 lg:px-12 lg:pt-32">
         <nav className="text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground">
           <Link to="/" className="hover:text-foreground">Home</Link>
           <span className="mx-3">/</span>
@@ -152,7 +152,7 @@ function ProductPage() {
               Reserve — Pay Later
             </button>
 
-            <dl className="mt-14 space-y-4 border-t hairline pt-8 text-sm">
+            <dl className="mt-10 space-y-4 border-t hairline pt-8 text-sm">
               <div className="flex justify-between gap-6">
                 <dt className="text-muted-foreground">Material</dt>
                 <dd className="text-right">{product.material}</dd>
@@ -174,7 +174,7 @@ function ProductPage() {
         </div>
       </div>
 
-      <section className="mx-auto max-w-[1600px] px-6 py-32 lg:px-12">
+      <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12">
         <div className="mb-14 flex items-end justify-between">
           <h2 className="font-serif text-3xl md:text-4xl">Also considered</h2>
           <Link to="/shop" className="border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground">

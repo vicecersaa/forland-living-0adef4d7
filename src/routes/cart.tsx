@@ -19,10 +19,10 @@ function CartPage() {
   const total = subtotal + shipping;
 
   return (
-    <div className="mx-auto max-w-[1600px] px-6 pt-24 pb-16 lg:px-12 lg:pt-40">
+    <div className="mx-auto max-w-[1600px] px-4 pt-20 pb-12 sm:px-6 lg:px-12 lg:pt-40 lg:pb-16">
       <div className="max-w-2xl">
         <div className="eyebrow">Step 01 · Bag</div>
-        <h1 className="mt-4 font-serif text-5xl leading-[1.05] md:text-6xl">Your Bag</h1>
+        <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-5xl md:text-6xl">Your Bag</h1>
         <p className="mt-6 text-[0.98rem] leading-[1.85] text-foreground/70">
           A moment to consider before checkout. Every piece is made to order in small batches.
         </p>
@@ -42,21 +42,24 @@ function CartPage() {
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
           <ul className="border-t hairline">
             {resolved.map((item, i) => (
-              <li key={`${item.id}-${item.size}-${item.color}`} className="grid grid-cols-[120px_1fr_auto] gap-6 border-b hairline py-8 sm:grid-cols-[160px_1fr_auto] sm:gap-8">
+              <li key={`${item.id}-${item.size}-${item.color}`} className="grid grid-cols-[96px_1fr] gap-4 border-b hairline py-6 sm:grid-cols-[140px_1fr] sm:gap-6 lg:grid-cols-[160px_1fr_auto] lg:gap-8 lg:py-8">
                 <Link to="/products/$id" params={{ id: item.id }} className="block aspect-[4/5] bg-surface">
                   <img src={item.product.image} alt={item.product.name} className="h-full w-full object-cover" />
                 </Link>
-                <div className="flex flex-col justify-between">
-                  <div>
+                <div className="flex min-w-0 flex-col justify-between">
+                  <div className="min-w-0">
                     <div className="eyebrow">{item.product.collection}</div>
-                    <Link to="/products/$id" params={{ id: item.id }} className="mt-2 block font-serif text-xl leading-tight hover:opacity-70 sm:text-2xl">
+                    <Link to="/products/$id" params={{ id: item.id }} className="mt-2 block truncate font-serif text-lg leading-tight hover:opacity-70 sm:text-2xl">
                       {item.product.name}
                     </Link>
                     <div className="mt-2 text-[0.78rem] tracking-[0.16em] uppercase text-muted-foreground">
                       {item.size} · {item.color}
                     </div>
+                    <div className="mt-3 text-right tabular-nums lg:hidden">
+                      ${(item.product.price * item.qty).toLocaleString()}
+                    </div>
                   </div>
-                  <div className="mt-4 flex items-center gap-4">
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
                     <div className="flex items-center border hairline">
                       <button onClick={() => update(i, item.qty - 1)} aria-label="Decrease" className="px-3 py-2">
                         <Minus className="h-3.5 w-3.5" />
@@ -74,7 +77,7 @@ function CartPage() {
                     </button>
                   </div>
                 </div>
-                <div className="text-right tabular-nums">
+                <div className="hidden text-right tabular-nums lg:block">
                   ${(item.product.price * item.qty).toLocaleString()}
                 </div>
               </li>
@@ -82,7 +85,7 @@ function CartPage() {
           </ul>
 
           <aside className="lg:sticky lg:top-32 lg:self-start">
-            <div className="border hairline p-8">
+            <div className="border hairline p-6 sm:p-8">
               <div className="eyebrow">Summary</div>
               <dl className="mt-6 space-y-4 text-sm">
                 <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd className="tabular-nums">${subtotal.toLocaleString()}</dd></div>

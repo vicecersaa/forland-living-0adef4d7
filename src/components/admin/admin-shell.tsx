@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const NAV = [
+type NavItem = { to: string; label: string; icon: any; end?: boolean; badge?: string };
+const NAV: { group: string; items: NavItem[] }[] = [
   { group: "Overview", items: [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
     { to: "/admin/analytics", label: "Analytics", icon: LineChart },
@@ -45,7 +46,7 @@ const NAV = [
     { to: "/admin/integrations", label: "Integrations", icon: Plug },
     { to: "/admin/settings", label: "Settings", icon: Settings },
   ]},
-] as const;
+];
 
 export function AdminShell({ title, description, breadcrumbs, actions, children }: {
   title: string;

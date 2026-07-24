@@ -17,6 +17,7 @@ export function SiteNav() {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onHome = pathname === "/";
+  const showSearch = pathname.startsWith("/shop") || pathname.startsWith("/products");
   const { count } = useCart();
 
   useEffect(() => {
@@ -71,7 +72,9 @@ export function SiteNav() {
         </Link>
 
         <div className="flex items-center justify-self-end sm:gap-2">
-          <IconBtn label="Search" className="hidden sm:inline-flex"><Search className="h-[18px] w-[18px]" /></IconBtn>
+          {showSearch && (
+            <IconBtn label="Search" className="inline-flex"><Search className="h-[18px] w-[18px]" /></IconBtn>
+          )}
           <IconBtn label="Account" className="hidden sm:inline-flex"><User className="h-[18px] w-[18px]" /></IconBtn>
           <IconBtn label="Wishlist" className="hidden sm:inline-flex"><Heart className="h-[18px] w-[18px]" /></IconBtn>
           <Link

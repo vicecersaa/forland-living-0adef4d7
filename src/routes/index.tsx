@@ -10,6 +10,7 @@ import bed1 from "@/assets/product-bed-1.jpg";
 import bed2 from "@/assets/product-bed-2.jpg";
 import { products } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
+import { Truck, ShieldCheck, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -19,6 +20,7 @@ function Index() {
   return (
     <>
       <Hero />
+      <PromoBanner />
       <Philosophy />
       <Collections />
       <Craftsmanship />
@@ -72,6 +74,52 @@ function Hero() {
       <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 mx-auto flex max-w-[1600px] items-end justify-between px-6 text-[0.65rem] tracking-[0.3em] uppercase text-background/60 lg:px-12">
         <span>Est. 2014 — Oslo</span>
         <span>N° 01 / 04</span>
+      </div>
+    </section>
+  );
+}
+
+function PromoBanner() {
+  return (
+    <section className="border-y hairline bg-foreground text-background">
+      <div className="mx-auto grid max-w-[1600px] items-stretch gap-0 px-6 py-10 md:grid-cols-[1.4fr_1fr] md:gap-16 md:py-14 lg:px-12">
+        <div className="flex flex-col justify-center">
+          <div className="eyebrow !text-background/60">Promo Bulan Ini</div>
+          <h2 className="mt-4 font-serif text-4xl leading-[1.05] md:text-6xl">
+            Gajian Sale.<br />
+            <span className="text-background/70">Hemat hingga Rp1.300.000.</span>
+          </h2>
+          <p className="mt-6 max-w-md text-[0.95rem] leading-relaxed text-background/70">
+            Kasur premium, pengiriman gratis se-Jabodetabek, dan garansi struktural 10 tahun.
+            Karena istirahat berkualitas seharusnya bisa diakses setiap keluarga rasional.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-3 border border-background/70 px-6 py-3 text-[0.72rem] tracking-[0.24em] uppercase transition-colors hover:bg-background hover:text-foreground"
+            >
+              Belanja Sekarang →
+            </Link>
+            <span className="text-[0.7rem] tracking-[0.24em] uppercase text-background/50">
+              Berakhir 30 hari lagi
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-px border border-background/15 bg-background/15 sm:grid-cols-3 md:grid-cols-1">
+          {[
+            { icon: Truck, t: "Free Shipping", c: "Jabodetabek & kota besar." },
+            { icon: ShieldCheck, t: "10-Year Guarantee", c: "Jaminan struktural." },
+            { icon: Sparkles, t: "Honest Value", c: "Spesifikasi tinggi, harga rasional." },
+          ].map(({ icon: Icon, t, c }) => (
+            <div key={t} className="flex items-center gap-4 bg-foreground px-6 py-5">
+              <Icon className="h-5 w-5 shrink-0 text-background/70" />
+              <div className="min-w-0">
+                <div className="text-[0.78rem] tracking-[0.2em] uppercase">{t}</div>
+                <div className="mt-1 text-xs text-background/60">{c}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

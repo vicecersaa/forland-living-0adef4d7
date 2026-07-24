@@ -33,18 +33,25 @@ export const Route = createFileRoute("/products/$id")({
   component: ProductPage,
 });
 
-const sizes = ["Single", "Double", "Queen", "King"];
-const colors = [
-  { name: "Fog", swatch: "oklch(0.9 0.005 250)" },
-  { name: "Concrete", swatch: "oklch(0.75 0.005 250)" },
-  { name: "Graphite", swatch: "oklch(0.42 0.005 250)" },
-  { name: "Ink", swatch: "oklch(0.22 0.002 250)" },
+const sizes = [
+  { label: "90 x 200", sub: "Single" },
+  { label: "100 x 200", sub: "Super Single" },
+  { label: "120 x 200", sub: "Small Double" },
+  { label: "160 x 200", sub: "Queen" },
+  { label: "180 x 200", sub: "King" },
+  { label: "200 x 200", sub: "Super King" },
 ];
 
 function ProductPage() {
   const { product } = Route.useLoaderData();
-  const [size, setSize] = useState("Queen");
-  const [color, setColor] = useState("Fog");
+  const variants = [
+    { id: "fullset-cream", name: "Fullset Cream", sub: "Kasur + Divan + Sandaran", img: product.image },
+    { id: "kasur-only", name: "Kasur Only", sub: "Tanpa divan", img: product.hoverImage ?? product.image },
+    { id: "paket-hemat", name: "Paket Hemat", sub: "Kasur + Bantal + Sprei", img: product.image },
+    { id: "paket-lengkap", name: "Paket Lengkap", sub: "Semua tersedia", img: product.hoverImage ?? product.image },
+  ];
+  const [variant, setVariant] = useState(variants[0].id);
+  const [size, setSize] = useState(sizes[3].label);
   const [qty, setQty] = useState(1);
   const { add } = useCart();
   const navigate = useNavigate();
@@ -88,40 +95,63 @@ function ProductPage() {
             </p>
 
             <div className="mt-10">
-              <div className="eyebrow mb-4">Size</div>
-              <div className="flex flex-wrap gap-2">
-                {sizes.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSize(s)}
-                    className={
-                      "border px-5 py-3 text-sm tracking-wide transition-colors " +
-                      (size === s
-                        ? "border-foreground bg-foreground text-background"
-                        : "hairline hover:border-foreground")
-                    }
-                  >
-                    {s}
-                  </button>
-                ))}
+              <div className="mb-4 flex items-baseline justify-between">
+                <div className="eyebrow">Varian</div>
+                <div className="text-xs text-muted-foreground">
+                  {variants.find((v) => v.id === variant)?.name}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {variants.map((v) => {
+                  const active = variant === v.id;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => setVariant(v.id)}
+                      className={
+                        "group flex flex-col overflow-hidden border text-left transition-all " +
+                        (active ? "border-foreground shadow-[0_0_0_1px_hsl(var(--foreground))]" : "hairline hover:border-foreground/60")
+                      }
+                    >
+                      <div className="aspect-square w-full bg-surface">
+                        <img src={v.img} alt={v.name} className="h-full w-full object-cover" loading="lazy" />
+                      </div>
+                      <div className="px-2 py-2">
+                        <div className="truncate text-[0.72rem] font-medium tracking-wide">{v.name}</div>
+                        <div className="mt-0.5 truncate text-[0.65rem] text-muted-foreground">{v.sub}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div className="mt-8">
-              <div className="eyebrow mb-4">Finish · {color}</div>
-              <div className="flex gap-3">
-                {colors.map((c) => (
-                  <button
-                    key={c.name}
-                    aria-label={c.name}
-                    onClick={() => setColor(c.name)}
-                    style={{ background: c.swatch }}
-                    className={
-                      "h-9 w-9 rounded-full border transition-all " +
-                      (color === c.name ? "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-background" : "hairline")
-                    }
-                  />
-                ))}
+              <div className="mb-4 flex items-baseline justify-between">
+                <div className="eyebrow">Ukuran</div>
+                <div className="text-xs text-muted-foreground">{size} cm</div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-3">
+                {sizes.map((s) => {
+                  const active = size === s.label;
+                  return (
+                    <button
+                      key={s.label}
+                      onClick={() => setSize(s.label)}
+                      className={
+                        "flex flex-col items-center border px-2 py-3 transition-colors " +
+                        (active
+                          ? "border-foreground bg-foreground text-background"
+                          : "hairline hover:border-foreground")
+                      }
+                    >
+                      <span className="text-sm font-medium tabular-nums">{s.label}</span>
+                      <span className={"mt-0.5 text-[0.65rem] tracking-wide " + (active ? "text-background/70" : "text-muted-foreground")}>
+                        {s.sub}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -137,7 +167,7 @@ function ProductPage() {
               </div>
               <button
                 onClick={() => {
-                  add({ id: product.id, size, color, qty });
+                  add({ id: product.id, size, color: variants.find((v) => v.id === variant)?.name ?? "", qty });
                   navigate({ to: "/cart" });
                 }}
                 className="flex-1 bg-foreground py-4 text-[0.78rem] tracking-[0.24em] uppercase text-background transition-opacity hover:opacity-90"

@@ -8,9 +8,10 @@ import gallery1 from "@/assets/gallery-1.jpg";
 import gallery2 from "@/assets/gallery-2.jpg";
 import bed1 from "@/assets/product-bed-1.jpg";
 import bed2 from "@/assets/product-bed-2.jpg";
+import { useEffect, useState } from "react";
 import { products } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
-import { Truck, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -80,44 +81,107 @@ function Hero() {
 }
 
 function PromoBanner() {
+  const slides = [
+    {
+      tag: "Gajian Sale",
+      title: "Hemat Rp1.300.000",
+      sub: "Kasur premium + gratis ongkir Jabodetabek. Berakhir 30 hari lagi.",
+      cta: "Belanja Sekarang",
+      bg: "linear-gradient(115deg, #f4e2c9 0%, #e8b878 55%, #c98a3f 100%)",
+      fg: "#1a1a1a",
+      image: bed1,
+    },
+    {
+      tag: "Free Shipping",
+      title: "Gratis Pengiriman",
+      sub: "Setiap pembelian kasur ke seluruh kota besar di Indonesia.",
+      cta: "Lihat Koleksi",
+      bg: "linear-gradient(115deg, #1a1a1a 0%, #3a3a3a 100%)",
+      fg: "#f5f5f5",
+      image: bed2,
+    },
+    {
+      tag: "10-Year Guarantee",
+      title: "Jaminan Struktural",
+      sub: "Kepercayaan diri dari pengerjaan lokal yang jujur dan teruji.",
+      cta: "Pelajari Lebih",
+      bg: "linear-gradient(115deg, #d9d9d9 0%, #b8b8b8 100%)",
+      fg: "#1a1a1a",
+      image: gallery1,
+    },
+  ];
+  const [i, setI] = useState(0);
+  const n = slides.length;
+  useEffect(() => {
+    const id = setInterval(() => setI((v) => (v + 1) % n), 5500);
+    return () => clearInterval(id);
+  }, [n]);
+  const go = (d: number) => setI((v) => (v + d + n) % n);
+
   return (
-    <section className="border-y hairline bg-foreground text-background">
-      <div className="mx-auto grid max-w-[1600px] items-stretch gap-0 px-6 py-10 md:grid-cols-[1.4fr_1fr] md:gap-16 md:py-14 lg:px-12">
-        <div className="flex flex-col justify-center">
-          <div className="eyebrow !text-background/60">Promo Bulan Ini</div>
-          <h2 className="mt-4 font-serif text-4xl leading-[1.05] md:text-6xl">
-            Gajian Sale.<br />
-            <span className="text-background/70">Hemat hingga Rp1.300.000.</span>
-          </h2>
-          <p className="mt-6 max-w-md text-[0.95rem] leading-relaxed text-background/70">
-            Kasur premium, pengiriman gratis se-Jabodetabek, dan garansi struktural 10 tahun.
-            Karena istirahat berkualitas seharusnya bisa diakses setiap keluarga rasional.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              to="/shop"
-              className="inline-flex items-center gap-3 border border-background/70 px-6 py-3 text-[0.72rem] tracking-[0.24em] uppercase transition-colors hover:bg-background hover:text-foreground"
-            >
-              Belanja Sekarang →
-            </Link>
-            <span className="text-[0.7rem] tracking-[0.24em] uppercase text-background/50">
-              Berakhir 30 hari lagi
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-px border border-background/15 bg-background/15 sm:grid-cols-3 md:grid-cols-1">
-          {[
-            { icon: Truck, t: "Free Shipping", c: "Jabodetabek & kota besar." },
-            { icon: ShieldCheck, t: "10-Year Guarantee", c: "Jaminan struktural." },
-            { icon: Sparkles, t: "Honest Value", c: "Spesifikasi tinggi, harga rasional." },
-          ].map(({ icon: Icon, t, c }) => (
-            <div key={t} className="flex items-center gap-4 bg-foreground px-6 py-5">
-              <Icon className="h-5 w-5 shrink-0 text-background/70" />
-              <div className="min-w-0">
-                <div className="text-[0.78rem] tracking-[0.2em] uppercase">{t}</div>
-                <div className="mt-1 text-xs text-background/60">{c}</div>
+    <section className="mx-auto max-w-[1600px] px-6 pt-10 md:pt-16 lg:px-12 lg:pt-20">
+      <div className="relative overflow-hidden">
+        <div
+          className="flex transition-transform duration-[900ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+          style={{ transform: `translateX(-${i * 100}%)` }}
+        >
+          {slides.map((s) => (
+            <div key={s.title} className="min-w-full">
+              <div
+                className="relative grid min-h-[340px] grid-cols-1 md:min-h-[380px] md:grid-cols-[1.15fr_1fr]"
+                style={{ background: s.bg, color: s.fg }}
+              >
+                <div className="flex flex-col justify-center px-6 py-10 md:px-14 md:py-14">
+                  <span
+                    className="inline-flex w-fit items-center gap-2 px-3 py-1 text-[0.7rem] tracking-[0.24em] uppercase"
+                    style={{ background: s.fg, color: s.bg.includes("#1a1a1a") ? "#1a1a1a" : "#fff" }}
+                  >
+                    {s.tag}
+                  </span>
+                  <h2 className="mt-5 font-serif text-4xl leading-[1.05] md:text-6xl">{s.title}</h2>
+                  <p className="mt-4 max-w-md text-[0.95rem] leading-relaxed opacity-80">{s.sub}</p>
+                  <Link
+                    to="/shop"
+                    className="mt-7 inline-flex w-fit items-center gap-3 border px-6 py-3 text-[0.72rem] tracking-[0.24em] uppercase transition-opacity hover:opacity-80"
+                    style={{ borderColor: s.fg }}
+                  >
+                    {s.cta} →
+                  </Link>
+                </div>
+                <div className="relative h-56 overflow-hidden md:h-auto">
+                  <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                </div>
               </div>
             </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => go(-1)}
+          aria-label="Previous slide"
+          className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center bg-background/85 text-foreground shadow-sm backdrop-blur transition-opacity hover:opacity-100 md:inline-flex"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => go(1)}
+          aria-label="Next slide"
+          className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center bg-background/85 text-foreground shadow-sm backdrop-blur transition-opacity hover:opacity-100 md:inline-flex"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+
+        <div className="absolute inset-x-0 bottom-4 flex items-center justify-center gap-2">
+          {slides.map((_, k) => (
+            <button
+              key={k}
+              aria-label={`Go to slide ${k + 1}`}
+              onClick={() => setI(k)}
+              className={
+                "h-[3px] transition-all duration-500 " +
+                (k === i ? "w-8 bg-foreground" : "w-4 bg-foreground/40")
+              }
+            />
           ))}
         </div>
       </div>

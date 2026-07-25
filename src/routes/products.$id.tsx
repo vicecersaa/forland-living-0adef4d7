@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { useState } from "react";
 import { getProduct, products } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
-import { Heart, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$id")({

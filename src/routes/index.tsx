@@ -47,27 +47,26 @@ function Hero() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/50" />
       <div className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-6 pb-16 lg:px-12 lg:pb-24">
         <div className="max-w-2xl fade-up">
-          <div className="eyebrow !text-background/80">Aera Collection — Spring</div>
+          <div className="eyebrow !text-background/80">Koleksi Aera — Musim Semi</div>
           <h1 className="mt-6 font-serif text-[clamp(2.75rem,6.5vw,6rem)] leading-[1.02] tracking-[-0.02em]">
-            A slower way<br />to end the day.
+            Cara yang lebih tenang<br />mengakhiri hari.
           </h1>
           <p className="mt-8 max-w-md text-[0.95rem] leading-relaxed text-background/80">
-            Beds and mattresses shaped by the belief that comfort should be quiet — honest
-            materials, unhurried hands, a room that finally lets you rest.
+            Bed dan kasur premium yang lahir dari keyakinan bahwa kenyamanan sejati bersifat tenang — material jujur, tangan yang tidak tergesa, dan ruang yang benar-benar mengistirahatkan Anda.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-8">
             <Link
               to="/shop"
               className="group inline-flex items-center gap-3 border-b border-background/70 pb-2 text-[0.78rem] tracking-[0.24em] uppercase transition-colors hover:border-background"
             >
-              Shop the Collection
+              Jelajahi Koleksi
               <span aria-hidden className="transition-transform duration-500 group-hover:translate-x-1">→</span>
             </Link>
             <Link
               to="/about"
               className="group inline-flex items-center gap-3 pb-2 text-[0.78rem] tracking-[0.24em] uppercase text-background/80 hover:text-background"
             >
-              Discover the Story
+              Kenali Cerita Kami
             </Link>
           </div>
         </div>
@@ -194,9 +193,9 @@ function Philosophy() {
     <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:py-48">
       <div className="grid gap-10 md:grid-cols-12 md:gap-24">
         <div className="md:col-span-5 md:sticky md:top-32 md:self-start">
-          <div className="eyebrow">Our Philosophy</div>
+          <div className="eyebrow">Filosofi Kami</div>
           <h2 className="mt-8 font-serif text-4xl leading-[1.05] md:text-6xl">
-            Luxury should feel lived&nbsp;in, not performed.
+            Kemewahan seharusnya terasa hidup, bukan dipertontonkan.
           </h2>
         </div>
         <div className="md:col-span-6 md:col-start-7">
@@ -210,14 +209,10 @@ function Philosophy() {
           />
           <div className="mt-10 space-y-6 text-[0.98rem] leading-[1.85] text-foreground/80 md:max-w-xl">
             <p>
-              We believe rest is a discipline. So we make the objects around it with the same care —
-              a bed you sink into without thinking, a mattress that holds you like a long breath,
-              linen that becomes better the longer you own it.
+              Kami percaya bahwa istirahat adalah sebuah disiplin. Karena itu, setiap benda di sekitarnya kami rawat dengan sungguh-sungguh — bed yang membuat Anda melebur tanpa berpikir, kasur yang memeluk seperti tarikan napas panjang, dan linen yang semakin lembut seiring waktu.
             </p>
             <p>
-              Nothing here shouts. Everything is placed with intention. Forland Living is a
-              practice of quiet — a house of considered pieces made to outlast trend, weather, and
-              the noise of the day.
+              Tidak ada yang berteriak di sini. Semua ditempatkan dengan niat. Forland Living adalah praktik ketenangan — sebuah rumah berisi karya yang dibuat untuk melampaui tren, cuaca, dan hiruk pikuk hari.
             </p>
           </div>
         </div>
@@ -228,24 +223,24 @@ function Philosophy() {
 
 function Collections() {
   const items = [
-    { title: "Beds", copy: "Frames in oak, walnut, and upholstery.", img: bed1, id: "beds" },
-    { title: "Mattresses", copy: "Fifteen layers of quiet support.", img: gallery2, id: "mattresses" },
-    { title: "Bedroom", copy: "A room, considered end to end.", img: gallery1, id: "bedroom" },
-    { title: "New Arrivals", copy: "The season, softly introduced.", img: bed2, id: "new" },
+    { title: "Bed", copy: "Rangka dari oak, walnut, dan pelapis linen.", img: bed1, id: "beds" },
+    { title: "Kasur", copy: "Lima belas lapis dukungan yang tenang.", img: gallery2, id: "mattresses" },
+    { title: "Kamar Tidur", copy: "Sebuah ruang, dirancang menyeluruh.", img: gallery1, id: "bedroom" },
+    { title: "Koleksi Baru", copy: "Musim ini, diperkenalkan dengan lembut.", img: bed2, id: "new" },
   ];
   return (
     <section className="border-t hairline bg-surface">
       <div className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <div className="eyebrow">Collections</div>
-            <h2 className="mt-4 font-serif text-4xl md:text-5xl">Composed for the room.</h2>
+            <div className="eyebrow">Koleksi</div>
+            <h2 className="mt-4 font-serif text-4xl md:text-5xl">Disusun untuk sebuah ruang.</h2>
           </div>
           <Link
             to="/shop"
             className="border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
           >
-            View All
+            Lihat Semua
           </Link>
         </div>
         <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -273,22 +268,21 @@ function Collections() {
 
 function Craftsmanship() {
   const pillars = [
-    { n: "01", t: "Honest Materials", c: "European flax, natural latex, kiln-dried oak, virgin wool." },
-    { n: "02", t: "Local Hands", c: "Every frame and mattress is assembled by a small team in Oslo." },
-    { n: "03", t: "Comfort, Engineered", c: "Fifteen tuned layers, mapped to the way a body settles." },
-    { n: "04", t: "Built to Age", c: "Repairable joinery. A 25-year structural guarantee." },
+    { n: "01", t: "Material Jujur", c: "Flax Eropa, latex alami, oak kering oven, dan wool murni." },
+    { n: "02", t: "Tangan Lokal", c: "Setiap rangka dan kasur dirakit oleh tim kecil di Oslo." },
+    { n: "03", t: "Kenyamanan Terukur", c: "Lima belas lapis presisi, dipetakan sesuai lekuk tubuh." },
+    { n: "04", t: "Dirancang untuk Berumur", c: "Sambungan yang dapat diperbaiki. Garansi struktural 25 tahun." },
   ];
   return (
     <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:py-48">
       <div className="grid gap-12 lg:grid-cols-2 lg:gap-24">
         <div className="order-2 lg:order-1">
-          <div className="eyebrow">Craftsmanship</div>
+          <div className="eyebrow">Pengerjaan</div>
           <h2 className="mt-6 font-serif text-4xl leading-[1.05] md:text-5xl">
-            Made slowly, so you may live slowly.
+            Dibuat perlahan, agar Anda dapat hidup perlahan.
           </h2>
           <p className="mt-8 max-w-lg text-[0.98rem] leading-[1.85] text-foreground/80">
-            Each Forland piece begins with a drawing and ends with a signature. Between the two,
-            weeks of measured work — no rushed seams, no hidden materials, no shortcuts.
+            Setiap karya Forland dimulai dari sebuah gambar dan diakhiri dengan tanda tangan. Di antara keduanya, berminggu-minggu pekerjaan yang terukur — tanpa jahitan yang terburu, tanpa material yang disembunyikan, tanpa jalan pintas.
           </p>
           <div className="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2">
             {pillars.map((p) => (
@@ -329,20 +323,18 @@ function MaterialStory() {
         </div>
         <div className="flex items-center px-6 py-14 lg:px-16 lg:py-32">
           <div className="max-w-lg">
-            <div className="eyebrow">Material Study — N° 03</div>
+            <div className="eyebrow">Studi Material — N° 03</div>
             <h2 className="mt-6 font-serif text-4xl leading-[1.05] md:text-5xl">
-              Belgian flax. Softened by weather, not chemistry.
+              Flax Belgia. Dilembutkan oleh cuaca, bukan kimia.
             </h2>
             <p className="mt-8 text-[0.98rem] leading-[1.85] text-foreground/80">
-              We source our linen from a single family mill in West Flanders. The yarn is loomed
-              slowly, then stone-washed in river water until it settles into the gentle, lived-in
-              hand that defines every Forland bed.
+              Linen kami berasal dari satu pabrik keluarga di West Flanders. Benangnya ditenun perlahan, lalu dicuci batu dalam air sungai hingga jatuh dengan sentuhan lembut dan hidup yang menjadi ciri setiap bed Forland.
             </p>
             <Link
               to="/journal"
               className="mt-10 inline-flex items-center gap-3 border-b hairline pb-2 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
             >
-              Read the Material Journal →
+              Baca Jurnal Material →
             </Link>
           </div>
         </div>
@@ -356,14 +348,14 @@ function BestSellers() {
     <section className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <div className="eyebrow">Considered Objects</div>
-          <h2 className="mt-4 font-serif text-4xl md:text-5xl">Quietly loved.</h2>
+          <div className="eyebrow">Karya Pilihan</div>
+          <h2 className="mt-4 font-serif text-4xl md:text-5xl">Dicintai dengan tenang.</h2>
         </div>
         <Link
           to="/shop"
           className="border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
         >
-          Shop All
+          Lihat Semua
         </Link>
       </div>
       <div className="mt-12 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
@@ -380,8 +372,8 @@ function Gallery() {
     <section className="border-t hairline bg-surface">
       <div className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
         <div className="max-w-xl">
-          <div className="eyebrow">A House, Photographed</div>
-          <h2 className="mt-4 font-serif text-4xl md:text-5xl">Rooms that breathe.</h2>
+          <div className="eyebrow">Rumah, Dalam Bidikan</div>
+          <h2 className="mt-4 font-serif text-4xl md:text-5xl">Ruang yang bernapas.</h2>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-12 md:gap-8">
           <img src={gallery1} alt="A serene minimalist bedroom" loading="lazy" className="aspect-[4/5] w-full object-cover md:col-span-5" />
@@ -400,24 +392,41 @@ function Gallery() {
 
 function Reviews() {
   const quotes = [
-    { q: "The first bed I've owned that feels like it belongs to the room, not the catalogue.", a: "Ines M. — Copenhagen" },
-    { q: "Sleep has quietly become the most considered part of my day.", a: "Julian W. — Berlin" },
-    { q: "You feel the hours in it. That's the compliment I can pay.", a: "Aiko S. — Kyoto" },
+    { q: "Bed pertama yang saya miliki yang terasa menjadi bagian dari kamar, bukan dari katalog.", a: "INES M.", city: "Copenhagen" },
+    { q: "Tidur diam-diam menjadi bagian paling saya pertimbangkan dari hari saya.", a: "JULIAN W.", city: "Berlin" },
+    { q: "Anda bisa merasakan jam kerja di dalamnya. Itulah pujian terbaik yang bisa saya berikan.", a: "AIKO S.", city: "Kyoto" },
   ];
   return (
-    <section className="mx-auto max-w-[1400px] px-6 py-16 text-center lg:px-12 lg:py-48">
-      <div className="eyebrow">From the House</div>
-      <div className="mt-10 grid gap-10 md:grid-cols-3">
-        {quotes.map((r) => (
-          <figure key={r.a} className="mx-auto max-w-sm">
-            <blockquote className="font-serif text-2xl leading-[1.35] md:text-[1.6rem]">
-              "{r.q}"
-            </blockquote>
-            <figcaption className="mt-8 text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground">
-              {r.a}
-            </figcaption>
-          </figure>
-        ))}
+    <section className="border-y hairline">
+      <div className="mx-auto max-w-[1500px] px-6 py-16 lg:px-12 lg:py-40">
+        <div className="mb-16 flex flex-wrap items-end justify-between gap-6 border-b hairline pb-8">
+          <div>
+            <div className="eyebrow">Dari Rumah Forland</div>
+            <h2 className="mt-4 font-serif text-3xl leading-[1.1] md:text-5xl">Suara dari mereka yang tidur di dalamnya.</h2>
+          </div>
+          <div className="text-[0.7rem] tracking-[0.3em] uppercase text-muted-foreground">N° 04 · Ulasan</div>
+        </div>
+        <div className="grid gap-x-10 gap-y-14 md:grid-cols-3">
+          {quotes.map((r, i) => (
+            <figure key={r.a} className="relative flex h-full flex-col">
+              <span aria-hidden className="font-serif text-6xl leading-none text-foreground/15">“</span>
+              <blockquote className="mt-2 font-serif text-[1.35rem] leading-[1.4] md:text-[1.55rem]">
+                {r.q}
+              </blockquote>
+              <div className="mt-8 flex-1" />
+              <figcaption className="mt-6 border-t hairline pt-5">
+                <div className="text-[0.72rem] tracking-[0.28em] uppercase">{r.a}</div>
+                <div className="mt-1 text-[0.68rem] tracking-[0.22em] uppercase text-muted-foreground">— {r.city}</div>
+                <div className="mt-3 flex items-center gap-1.5 text-foreground/70">
+                  {Array.from({ length: 5 }).map((_, k) => (
+                    <span key={k} className="text-[0.7rem]">★</span>
+                  ))}
+                  <span className="ml-2 text-[0.65rem] tracking-[0.2em] uppercase text-muted-foreground">N° 0{i + 1}</span>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -427,9 +436,9 @@ function Newsletter() {
   return (
     <section className="border-t hairline bg-foreground text-background">
       <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-14 text-center lg:py-32">
-        <div className="eyebrow !text-background/60">Correspondence</div>
+        <div className="eyebrow !text-background/60">Surat Berkala</div>
         <h2 className="mt-6 font-serif text-3xl leading-[1.15] md:text-5xl">
-          Occasional letters on rest, rooms, and the making of quiet things.
+          Surat sesekali tentang istirahat, ruang, dan pembuatan karya yang tenang.
         </h2>
         <form
           onSubmit={(e) => e.preventDefault()}
@@ -438,17 +447,17 @@ function Newsletter() {
           <input
             type="email"
             required
-            placeholder="Your email address"
+            placeholder="Alamat email Anda"
             className="w-full bg-transparent py-3 text-sm placeholder:text-background/50 focus:outline-none"
           />
           <button
             type="submit"
             className="pb-2 pl-4 text-[0.72rem] tracking-[0.24em] uppercase text-background/80 hover:text-background"
           >
-            Subscribe →
+            Berlangganan →
           </button>
         </form>
-        <p className="mt-6 text-xs text-background/50">No more than once a month. Unsubscribe anytime.</p>
+        <p className="mt-6 text-xs text-background/50">Tidak lebih dari sekali sebulan. Berhenti langganan kapan saja.</p>
       </div>
     </section>
   );

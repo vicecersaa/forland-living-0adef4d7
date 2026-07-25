@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { useState } from "react";
 import { getProduct, products } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
-import { Heart, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$id")({
@@ -24,9 +24,9 @@ export const Route = createFileRoute("/products/$id")({
   }),
   notFoundComponent: () => (
     <div className="mx-auto max-w-xl px-6 py-12 text-center">
-      <h1 className="font-serif text-4xl">This piece is no longer listed.</h1>
+      <h1 className="font-serif text-4xl">Karya ini sudah tidak tersedia.</h1>
       <Link to="/shop" className="mt-8 inline-block border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase">
-        Return to Shop
+        Kembali ke Katalog
       </Link>
     </div>
   ),
@@ -61,9 +61,9 @@ function ProductPage() {
     <>
       <div className="mx-auto max-w-[1600px] px-6 pt-24 lg:px-12 lg:pt-32">
         <nav className="text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">Home</Link>
+          <Link to="/" className="hover:text-foreground">Beranda</Link>
           <span className="mx-3">/</span>
-          <Link to="/shop" className="hover:text-foreground">Shop</Link>
+          <Link to="/shop" className="hover:text-foreground">Katalog</Link>
           <span className="mx-3">/</span>
           <span className="text-foreground">{product.name}</span>
         </nav>
@@ -88,7 +88,7 @@ function ProductPage() {
           <div className="lg:sticky lg:top-32 lg:self-start">
             <div className="eyebrow">{product.collection}</div>
             <h1 className="mt-4 font-serif text-4xl leading-[1.05] md:text-5xl">{product.name}</h1>
-            <div className="mt-6 text-lg tabular-nums">${product.price.toLocaleString()}</div>
+            <div className="mt-6 text-lg tabular-nums">Rp{product.price.toLocaleString("id-ID")}</div>
 
             <p className="mt-8 text-[0.98rem] leading-[1.85] text-foreground/80">
               {product.description}
@@ -172,14 +172,11 @@ function ProductPage() {
                 }}
                 className="flex-1 bg-foreground py-4 text-[0.78rem] tracking-[0.24em] uppercase text-background transition-opacity hover:opacity-90"
               >
-                Add to Bag
-              </button>
-              <button aria-label="Save to wishlist" className="grid place-items-center border hairline px-4 hover:border-foreground">
-                <Heart className="h-4 w-4" />
+                Tambah ke Keranjang
               </button>
             </div>
             <button className="mt-3 w-full border hairline py-4 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground">
-              Reserve — Pay Later
+              Reservasi — Bayar Nanti
             </button>
 
             <dl className="mt-10 space-y-4 border-t hairline pt-8 text-sm">
@@ -188,16 +185,16 @@ function ProductPage() {
                 <dd className="text-right">{product.material}</dd>
               </div>
               <div className="flex justify-between gap-6">
-                <dt className="text-muted-foreground">Made in</dt>
-                <dd className="text-right">Oslo, Norway</dd>
+                <dt className="text-muted-foreground">Dibuat di</dt>
+                <dd className="text-right">Oslo, Norwegia</dd>
               </div>
               <div className="flex justify-between gap-6">
-                <dt className="text-muted-foreground">Lead time</dt>
-                <dd className="text-right">6 — 8 weeks</dd>
+                <dt className="text-muted-foreground">Waktu produksi</dt>
+                <dd className="text-right">6 — 8 minggu</dd>
               </div>
               <div className="flex justify-between gap-6">
-                <dt className="text-muted-foreground">Guarantee</dt>
-                <dd className="text-right">25 years, structural</dd>
+                <dt className="text-muted-foreground">Garansi</dt>
+                <dd className="text-right">25 tahun struktural</dd>
               </div>
             </dl>
           </div>
@@ -206,9 +203,9 @@ function ProductPage() {
 
       <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12">
         <div className="mb-14 flex items-end justify-between">
-          <h2 className="font-serif text-3xl md:text-4xl">Also considered</h2>
+          <h2 className="font-serif text-3xl md:text-4xl">Pertimbangan Lain</h2>
           <Link to="/shop" className="border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground">
-            View All
+            Lihat Semua
           </Link>
         </div>
         <div className="grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">

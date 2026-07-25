@@ -2,30 +2,30 @@ import { Link } from "@tanstack/react-router";
 
 const columns: { title: string; links: { label: string; to: string }[] }[] = [
   {
-    title: "Shop",
+    title: "Belanja",
     links: [
-      { label: "All Products", to: "/shop" },
-      { label: "Beds", to: "/shop" },
-      { label: "Mattresses", to: "/shop" },
-      { label: "Bedding", to: "/shop" },
+      { label: "Semua Produk", to: "/shop" },
+      { label: "Bed", to: "/shop" },
+      { label: "Kasur", to: "/shop" },
+      { label: "Perlengkapan Tidur", to: "/shop" },
     ],
   },
   {
-    title: "House",
+    title: "Rumah Forland",
     links: [
-      { label: "Our Story", to: "/about" },
-      { label: "Craftsmanship", to: "/about" },
-      { label: "Journal", to: "/journal" },
-      { label: "Contact", to: "/contact" },
+      { label: "Cerita Kami", to: "/about" },
+      { label: "Pengerjaan", to: "/about" },
+      { label: "Jurnal", to: "/journal" },
+      { label: "Kontak", to: "/contact" },
     ],
   },
   {
-    title: "Service",
+    title: "Layanan",
     links: [
-      { label: "Shipping & Delivery", to: "/contact" },
-      { label: "Returns", to: "/contact" },
-      { label: "Care Guide", to: "/journal" },
-      { label: "FAQ", to: "/contact" },
+      { label: "Pengiriman", to: "/contact" },
+      { label: "Pengembalian", to: "/contact" },
+      { label: "Panduan Perawatan", to: "/journal" },
+      { label: "Tanya Jawab", to: "/contact" },
     ],
   },
 ];
@@ -38,8 +38,7 @@ export function SiteFooter() {
           <div className="max-w-sm">
             <div className="font-serif text-2xl tracking-[0.32em]">FORLAND</div>
             <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-              Forland Living crafts beds and mattresses for a slower, softer way of living. Quiet
-              luxury. Timeless comfort. Thoughtfully made.
+              Forland Living menciptakan kasur dan bed premium untuk cara hidup yang lebih lambat dan tenang. Quiet luxury, kenyamanan abadi, dikerjakan dengan seksama.
             </p>
           </div>
           {columns.map((col) => (
@@ -59,10 +58,10 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col-reverse items-start justify-between gap-6 border-t hairline pt-8 text-xs text-muted-foreground md:flex-row md:items-center">
-          <div>© {new Date().getFullYear()} Forland Living. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} Forland Living. Seluruh hak cipta dilindungi.</div>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
+            <a href="#" className="hover:text-foreground">Privasi</a>
+            <a href="#" className="hover:text-foreground">Ketentuan</a>
             <a href="#" className="hover:text-foreground">Instagram</a>
             <a href="#" className="hover:text-foreground">Pinterest</a>
           </div>

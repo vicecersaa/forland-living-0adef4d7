@@ -6,17 +6,23 @@ import { LayoutGrid, Rows3, Star } from "lucide-react";
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop — Forland Living" },
-      { name: "description", content: "Beds, mattresses, and bedding, quietly considered. Explore the full Forland Living catalogue." },
-      { property: "og:title", content: "Shop — Forland Living" },
-      { property: "og:description", content: "Beds, mattresses, and bedding, quietly considered." },
+      { title: "Belanja Kasur & Bed Premium — Forland Living" },
+      { name: "description", content: "Jelajahi katalog lengkap kasur, bed, dan perlengkapan tidur premium Forland Living. Quiet luxury untuk kamar tidur Anda." },
+      { property: "og:title", content: "Belanja Kasur & Bed Premium — Forland Living" },
+      { property: "og:description", content: "Katalog kasur, bed, dan perlengkapan tidur premium Forland Living." },
     ],
   }),
   component: ShopPage,
 });
 
-const categories = ["All", "Beds", "Mattresses", "Bedding"] as const;
-const sorts = ["Featured", "Price · Low", "Price · High", "Newest"] as const;
+const categories = ["Semua", "Bed", "Kasur", "Perlengkapan"] as const;
+const sorts = ["Unggulan", "Harga · Terendah", "Harga · Tertinggi", "Terbaru"] as const;
+const CATEGORY_MAP: Record<(typeof categories)[number], string | null> = {
+  Semua: null,
+  Bed: "Beds",
+  Kasur: "Mattresses",
+  Perlengkapan: "Bedding",
+};
 
 const allMaterials = Array.from(
   new Set(products.flatMap((p) => p.materials))
@@ -26,8 +32,8 @@ const priceMin = 0;
 const priceMax = Math.ceil(Math.max(...products.map((p) => p.price)) / 500) * 500;
 
 function ShopPage() {
-  const [category, setCategory] = useState<(typeof categories)[number]>("All");
-  const [sort, setSort] = useState<(typeof sorts)[number]>("Featured");
+  const [category, setCategory] = useState<(typeof categories)[number]>("Semua");
+  const [sort, setSort] = useState<(typeof sorts)[number]>("Unggulan");
   const [maxPrice, setMaxPrice] = useState<number>(priceMax);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -38,14 +44,15 @@ function ShopPage() {
     );
 
   const filtered = useMemo<Product[]>(() => {
-    let base = category === "All" ? products : products.filter((p) => p.category === category);
+    const cat = CATEGORY_MAP[category];
+    let base = cat === null ? products : products.filter((p) => p.category === cat);
     base = base.filter((p) => p.price <= maxPrice);
     if (selectedMaterials.length) {
       base = base.filter((p) => selectedMaterials.some((m) => p.materials.includes(m)));
     }
     const sorted = [...base];
-    if (sort === "Price · Low") sorted.sort((a, b) => a.price - b.price);
-    if (sort === "Price · High") sorted.sort((a, b) => b.price - a.price);
+    if (sort === "Harga · Terendah") sorted.sort((a, b) => a.price - b.price);
+    if (sort === "Harga · Tertinggi") sorted.sort((a, b) => b.price - a.price);
     return sorted;
   }, [category, sort, maxPrice, selectedMaterials]);
 
@@ -53,10 +60,10 @@ function ShopPage() {
     <>
       <header className="border-b hairline pt-24 pb-16 lg:pt-40 lg:pb-24">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
-          <div className="eyebrow">The Catalogue</div>
-          <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-7xl">All Objects</h1>
+          <div className="eyebrow">Katalog</div>
+          <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-7xl">Semua Karya</h1>
           <p className="mt-6 max-w-xl text-foreground/70">
-            A small, considered range — beds, mattresses, and the soft things that finish a room.
+            Rangkaian karya yang ringkas dan penuh pertimbangan — bed, kasur, dan perlengkapan lembut yang menyempurnakan sebuah kamar.
           </p>
         </div>
       </header>
@@ -83,14 +90,14 @@ function ShopPage() {
           {/* Sidebar filters */}
           <aside className="space-y-10">
             <div>
-              <div className="eyebrow">— Filter</div>
+              <div className="eyebrow">— Saring</div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Showing {filtered.length} of {products.length}
+                Menampilkan {filtered.length} dari {products.length}
               </p>
             </div>
 
             <div>
-              <h3 className="font-serif text-lg">Price</h3>
+              <h3 className="font-serif text-lg">Harga</h3>
               <input
                 type="range"
                 min={priceMin}
@@ -101,8 +108,8 @@ function ShopPage() {
                 className="mt-4 w-full accent-foreground"
               />
               <div className="mt-2 flex justify-between text-xs text-muted-foreground tabular-nums">
-                <span>${priceMin.toLocaleString()}</span>
-                <span>Up to ${maxPrice.toLocaleString()}</span>
+                <span>Rp{priceMin.toLocaleString("id-ID")}</span>
+                <span>Hingga Rp{maxPrice.toLocaleString("id-ID")}</span>
               </div>
             </div>
 
@@ -133,7 +140,7 @@ function ShopPage() {
                 }}
                 className="eyebrow border-b hairline pb-0.5 text-muted-foreground hover:text-foreground"
               >
-                Clear filters
+                Reset filter
               </button>
             )}
           </aside>
@@ -178,7 +185,7 @@ function ShopPage() {
 
             {filtered.length === 0 ? (
               <div className="py-14 text-center text-sm text-muted-foreground">
-                No objects match these filters.
+                Tidak ada karya yang cocok dengan filter ini.
               </div>
             ) : view === "grid" ? (
               <div className="mt-10 grid gap-x-10 gap-y-16 sm:grid-cols-2">
@@ -197,9 +204,9 @@ function ShopPage() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t hairline pt-10 text-sm text-muted-foreground">
-          <span>Showing {filtered.length} of {products.length}</span>
+          <span>Menampilkan {filtered.length} dari {products.length}</span>
           <Link to="/contact" className="text-foreground border-b hairline pb-0.5 hover:border-foreground">
-            Speak with an atelier advisor
+            Konsultasi dengan penasihat atelier
           </Link>
         </div>
       </div>
@@ -212,7 +219,7 @@ function Rating({ rating, reviews }: { rating: number; reviews: number }) {
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <Star className="h-3 w-3 fill-foreground text-foreground" />
       <span className="tabular-nums text-foreground/80">{rating.toFixed(1)}</span>
-      <span>· {reviews} reviews</span>
+      <span>· {reviews} ulasan</span>
     </div>
   );
 }
@@ -220,10 +227,10 @@ function Rating({ rating, reviews }: { rating: number; reviews: number }) {
 function PriceBlock({ product }: { product: Product }) {
   return (
     <div className="flex items-baseline gap-2 tabular-nums">
-      <span className="text-sm">${product.price.toLocaleString()}</span>
+      <span className="text-sm">Rp{product.price.toLocaleString("id-ID")}</span>
       {product.originalPrice && (
         <span className="text-xs text-muted-foreground line-through">
-          ${product.originalPrice.toLocaleString()}
+          Rp{product.originalPrice.toLocaleString("id-ID")}
         </span>
       )}
     </div>

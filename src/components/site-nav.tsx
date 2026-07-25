@@ -1,15 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, Search, User, Heart, ShoppingBag, X } from "lucide-react";
+import { Menu, Search, ShoppingBag, X, Package } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 const links = [
-  { to: "/shop", label: "Shop" },
-  { to: "/shop", label: "Beds" },
-  { to: "/shop", label: "Mattresses" },
-  { to: "/journal", label: "Journal" },
-  { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
+  { to: "/shop", label: "Belanja" },
+  { to: "/shop", label: "Bed" },
+  { to: "/shop", label: "Kasur" },
+  { to: "/journal", label: "Jurnal" },
+  { to: "/about", label: "Tentang" },
+  { to: "/contact", label: "Kontak" },
 ] as const;
 
 export function SiteNav() {
@@ -19,6 +20,7 @@ export function SiteNav() {
   const onHome = pathname === "/";
   const showSearch = pathname.startsWith("/shop") || pathname.startsWith("/products");
   const { count } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -71,15 +73,30 @@ export function SiteNav() {
           FORLAND
         </Link>
 
-        <div className="flex items-center justify-self-end sm:gap-2">
+        <div className="flex items-center gap-1 justify-self-end sm:gap-2">
           {showSearch && (
-            <IconBtn label="Search" className="inline-flex"><Search className="h-[18px] w-[18px]" /></IconBtn>
+            <IconBtn label="Cari" className="inline-flex"><Search className="h-[18px] w-[18px]" /></IconBtn>
           )}
-          <IconBtn label="Account" className="hidden sm:inline-flex"><User className="h-[18px] w-[18px]" /></IconBtn>
-          <IconBtn label="Wishlist" className="hidden sm:inline-flex"><Heart className="h-[18px] w-[18px]" /></IconBtn>
+          {user ? (
+            <Link
+              to="/orders"
+              aria-label="Pesanan Saya"
+              className="inline-flex items-center gap-2 border border-current/40 px-3 py-2 text-[0.68rem] tracking-[0.22em] uppercase opacity-90 transition-opacity duration-500 hover:opacity-100 sm:px-4"
+            >
+              <Package className="h-[15px] w-[15px]" />
+              <span className="hidden sm:inline">Pesanan Saya</span>
+            </Link>
+          ) : (
+            <Link
+              to="/auth"
+              className="hidden items-center border border-current/40 px-4 py-2 text-[0.68rem] tracking-[0.22em] uppercase opacity-90 transition-opacity duration-500 hover:opacity-100 sm:inline-flex"
+            >
+              Masuk
+            </Link>
+          )}
           <Link
             to="/cart"
-            aria-label="Cart"
+            aria-label="Keranjang"
             className="-mr-2 inline-flex h-10 w-10 items-center justify-center opacity-80 transition-opacity duration-500 hover:opacity-100 sm:mr-0"
           >
             <span className="relative">
@@ -104,6 +121,12 @@ export function SiteNav() {
                 {l.label}
               </Link>
             ))}
+            <Link
+              to={user ? "/orders" : "/auth"}
+              className="border-b hairline py-4 text-sm tracking-[0.18em] uppercase last:border-b-0"
+            >
+              {user ? "Pesanan Saya" : "Masuk / Daftar"}
+            </Link>
           </nav>
         </div>
       )}

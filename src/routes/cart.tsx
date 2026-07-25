@@ -5,8 +5,8 @@ import { useCart } from "@/lib/cart";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your Bag — Forland Living" },
-      { name: "description", content: "Review the pieces in your bag before checkout." },
+      { title: "Keranjang Belanja — Forland Living" },
+      { name: "description", content: "Tinjau kembali kasur dan bed premium di keranjang Anda sebelum melanjutkan ke pembayaran." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -21,21 +21,21 @@ function CartPage() {
   return (
     <div className="mx-auto max-w-[1600px] px-4 pt-20 pb-12 sm:px-6 lg:px-12 lg:pt-40 lg:pb-16">
       <div className="max-w-2xl">
-        <div className="eyebrow">Step 01 · Bag</div>
-        <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-5xl md:text-6xl">Your Bag</h1>
+        <div className="eyebrow">Langkah 01 · Keranjang</div>
+        <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-5xl md:text-6xl">Keranjang Anda</h1>
         <p className="mt-6 text-[0.98rem] leading-[1.85] text-foreground/70">
-          A moment to consider before checkout. Every piece is made to order in small batches.
+          Sejenak untuk mempertimbangkan sebelum pembayaran. Setiap karya dibuat sesuai pesanan dalam batch kecil.
         </p>
       </div>
 
       {resolved.length === 0 ? (
         <div className="mt-12 border-t hairline pt-24 text-center">
-          <p className="font-serif text-2xl text-foreground/70">Your bag is empty.</p>
+          <p className="font-serif text-2xl text-foreground/70">Keranjang Anda masih kosong.</p>
           <Link
             to="/shop"
             className="mt-8 inline-block border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
           >
-            Explore the Collection
+            Jelajahi Koleksi
           </Link>
         </div>
       ) : (
@@ -73,12 +73,12 @@ function CartPage() {
                       onClick={() => remove(i)}
                       className="inline-flex items-center gap-1 text-[0.72rem] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground"
                     >
-                      <X className="h-3 w-3" /> Remove
+                      <X className="h-3 w-3" /> Hapus
                     </button>
                   </div>
                 </div>
                 <div className="hidden text-right tabular-nums lg:block">
-                  ${(item.product.price * item.qty).toLocaleString()}
+                  Rp{(item.product.price * item.qty).toLocaleString("id-ID")}
                 </div>
               </li>
             ))}
@@ -86,31 +86,31 @@ function CartPage() {
 
           <aside className="lg:sticky lg:top-32 lg:self-start">
             <div className="border hairline p-6 sm:p-8">
-              <div className="eyebrow">Summary</div>
+              <div className="eyebrow">Ringkasan</div>
               <dl className="mt-6 space-y-4 text-sm">
-                <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd className="tabular-nums">${subtotal.toLocaleString()}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">White-glove delivery</dt><dd>Complimentary</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">Taxes</dt><dd>Calculated at checkout</dd></div>
+                <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd className="tabular-nums">Rp{subtotal.toLocaleString("id-ID")}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted-foreground">Pengiriman white-glove</dt><dd>Gratis</dd></div>
+                <div className="flex justify-between"><dt className="text-muted-foreground">Pajak</dt><dd>Dihitung saat pembayaran</dd></div>
               </dl>
               <div className="mt-6 flex justify-between border-t hairline pt-6 text-base">
                 <span>Total</span>
-                <span className="tabular-nums">${total.toLocaleString()}</span>
+                <span className="tabular-nums">Rp{total.toLocaleString("id-ID")}</span>
               </div>
               <Link
                 to="/checkout"
                 className="mt-8 block bg-foreground py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90"
               >
-                Proceed to Checkout
+                Lanjut ke Pembayaran
               </Link>
               <Link
                 to="/shop"
                 className="mt-3 block border hairline py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
               >
-                Continue Browsing
+                Lanjut Berbelanja
               </Link>
             </div>
             <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-              Made-to-order pieces ship within 6–8 weeks. Each order is accompanied by a personal note from the workshop.
+              Karya made-to-order dikirim dalam 6–8 minggu. Setiap pesanan disertai catatan personal dari atelier kami.
             </p>
           </aside>
         </div>

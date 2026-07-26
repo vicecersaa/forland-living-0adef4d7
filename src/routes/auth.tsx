@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
-import heroImg from "@/assets/philosophy.jpg";
+import heroImg from "@/assets/auth-hero.jpg";
 
 type Search = { redirect?: string; mode?: "login" | "register" };
 
@@ -30,7 +30,7 @@ function AuthPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) navigate({ to: (redirect as "/orders") ?? "/orders", replace: true });
+    if (user) navigate({ to: (redirect as "/") ?? "/", replace: true });
   }, [user, redirect, navigate]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {

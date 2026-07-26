@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, Search, ShoppingBag, X, Package } from "lucide-react";
+import { Menu, Search, ShoppingBag, X, Package, LogIn, LogOut } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 
@@ -20,7 +20,7 @@ export function SiteNav() {
   const onHome = pathname === "/";
   const showSearch = pathname.startsWith("/shop") || pathname.startsWith("/products");
   const { count } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -78,20 +78,33 @@ export function SiteNav() {
             <IconBtn label="Cari" className="inline-flex"><Search className="h-[18px] w-[18px]" /></IconBtn>
           )}
           {user ? (
-            <Link
-              to="/orders"
-              aria-label="Pesanan Saya"
-              className="inline-flex items-center gap-2 border border-current/40 px-3 py-2 text-[0.68rem] tracking-[0.22em] uppercase opacity-90 transition-opacity duration-500 hover:opacity-100 sm:px-4"
-            >
-              <Package className="h-[15px] w-[15px]" />
-              <span className="hidden sm:inline">Pesanan Saya</span>
-            </Link>
+            <>
+              <Link
+                to="/orders"
+                aria-label="Pesanan Saya"
+                className="group inline-flex items-center gap-2 rounded-full px-2.5 py-2 text-[0.7rem] tracking-[0.2em] uppercase opacity-85 transition-opacity duration-500 hover:opacity-100 sm:gap-2.5 sm:px-3.5"
+              >
+                <Package className="h-4 w-4 shrink-0" strokeWidth={1.4} />
+                <span className="hidden sm:inline leading-none">Pesanan</span>
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                aria-label="Keluar"
+                title="Keluar"
+                className="inline-flex h-10 w-10 items-center justify-center opacity-70 transition-opacity duration-500 hover:opacity-100"
+              >
+                <LogOut className="h-[17px] w-[17px]" strokeWidth={1.4} />
+              </button>
+            </>
           ) : (
             <Link
               to="/auth"
-              className="hidden items-center border border-current/40 px-4 py-2 text-[0.68rem] tracking-[0.22em] uppercase opacity-90 transition-opacity duration-500 hover:opacity-100 sm:inline-flex"
+              aria-label="Masuk"
+              className="hidden items-center gap-2.5 rounded-full px-3.5 py-2 text-[0.7rem] tracking-[0.2em] uppercase opacity-85 transition-opacity duration-500 hover:opacity-100 sm:inline-flex"
             >
-              Masuk
+              <LogIn className="h-4 w-4 shrink-0" strokeWidth={1.4} />
+              <span className="leading-none">Masuk</span>
             </Link>
           )}
           <Link
@@ -127,6 +140,15 @@ export function SiteNav() {
             >
               {user ? "Pesanan Saya" : "Masuk / Daftar"}
             </Link>
+            {user && (
+              <button
+                type="button"
+                onClick={logout}
+                className="flex items-center gap-2 py-4 text-left text-sm tracking-[0.18em] uppercase text-muted-foreground"
+              >
+                <LogOut className="h-4 w-4" strokeWidth={1.4} /> Keluar
+              </button>
+            )}
           </nav>
         </div>
       )}

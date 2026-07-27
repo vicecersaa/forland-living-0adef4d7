@@ -30,11 +30,16 @@ export function CookieConsent() {
   return (
     <div
       role="dialog"
+      aria-modal="true"
       aria-live="polite"
       aria-label="Preferensi cookie"
-      className="fade-up fixed inset-x-3 bottom-3 z-[60] sm:inset-x-auto sm:left-6 sm:bottom-6 sm:max-w-md"
+      className="fixed inset-0 z-[60] flex items-center justify-center px-4 py-6"
     >
-      <div className="relative border hairline bg-background/95 p-5 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-6">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-background/40 backdrop-blur-md fade-in-slow"
+      />
+      <div className="fade-up relative w-full max-w-md border hairline bg-background/98 p-6 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.45)] sm:p-8">
         <button
           type="button"
           onClick={() => decide("essential")}
@@ -44,7 +49,7 @@ export function CookieConsent() {
           <X className="h-4 w-4" strokeWidth={1.4} />
         </button>
         <div className="eyebrow">— Privasi</div>
-        <h3 className="mt-2 font-serif text-xl leading-tight">
+        <h3 className="mt-2 font-serif text-2xl leading-tight">
           Kami menghargai ketenangan Anda.
         </h3>
         <p className="mt-2 text-[13px] leading-relaxed text-foreground/70">

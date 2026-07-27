@@ -22,11 +22,11 @@ function Index() {
     <>
       <Hero />
       <PromoBanner />
-      <Philosophy />
       <Collections />
+      <BestSellers />
+      <Philosophy />
       <Craftsmanship />
       <MaterialStory />
-      <BestSellers />
       <Gallery />
       <Reviews />
       <Newsletter />

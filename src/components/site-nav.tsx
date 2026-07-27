@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Menu, Search, ShoppingBag, X, Package, LogIn, LogOut } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
+import { SearchOverlay } from "./search-overlay";
 
 const links = [
   { to: "/shop", label: "Belanja" },
@@ -16,6 +17,7 @@ const links = [
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onHome = pathname === "/";
   const showSearch = pathname.startsWith("/shop") || pathname.startsWith("/products");
@@ -36,6 +38,7 @@ export function SiteNav() {
   const solid = scrolled || !onHome || open;
 
   return (
+    <>
     <header
       className={[
         "fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,color] duration-700 ease-out",
@@ -75,7 +78,9 @@ export function SiteNav() {
 
         <div className="flex items-center gap-1 justify-self-end sm:gap-2">
           {showSearch && (
-            <IconBtn label="Cari" className="inline-flex"><Search className="h-[18px] w-[18px]" /></IconBtn>
+            <IconBtn label="Cari" className="inline-flex" onClick={() => setSearchOpen(true)}>
+              <Search className="h-[18px] w-[18px]" strokeWidth={1.4} />
+            </IconBtn>
           )}
           {user ? (
             <>
@@ -153,6 +158,8 @@ export function SiteNav() {
         </div>
       )}
     </header>
+    <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }
 
@@ -160,15 +167,18 @@ function IconBtn({
   children,
   label,
   className = "",
+  onClick,
 }: {
   children: React.ReactNode;
   label: string;
   className?: string;
+  onClick?: () => void;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
+      onClick={onClick}
       className={`inline-flex h-10 w-10 items-center justify-center opacity-80 transition-opacity duration-500 hover:opacity-100 ${className}`}
     >
       {children}

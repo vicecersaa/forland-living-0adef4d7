@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { products, type Product } from "@/lib/products";
-import { LayoutGrid, Rows3, Star } from "lucide-react";
+import { LayoutGrid, Rows3, Star, Search, X } from "lucide-react";
 
 export const Route = createFileRoute("/shop")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Belanja Kasur & Bed Premium — Forland Living" },
@@ -32,11 +35,14 @@ const priceMin = 0;
 const priceMax = Math.ceil(Math.max(...products.map((p) => p.price)) / 500) * 500;
 
 function ShopPage() {
+  const { q: qParam } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [category, setCategory] = useState<(typeof categories)[number]>("Semua");
   const [sort, setSort] = useState<(typeof sorts)[number]>("Unggulan");
   const [maxPrice, setMaxPrice] = useState<number>(priceMax);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [view, setView] = useState<"grid" | "list">("grid");
+  const query = (qParam ?? "").trim().toLowerCase();
 
   const toggleMaterial = (m: string) =>
     setSelectedMaterials((cur) =>
@@ -50,21 +56,55 @@ function ShopPage() {
     if (selectedMaterials.length) {
       base = base.filter((p) => selectedMaterials.some((m) => p.materials.includes(m)));
     }
+    if (query) {
+      base = base.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.shortDescription.toLowerCase().includes(query) ||
+          p.collection.toLowerCase().includes(query) ||
+          p.materials.some((m) => m.toLowerCase().includes(query))
+      );
+    }
     const sorted = [...base];
     if (sort === "Harga · Terendah") sorted.sort((a, b) => a.price - b.price);
     if (sort === "Harga · Tertinggi") sorted.sort((a, b) => b.price - a.price);
     return sorted;
-  }, [category, sort, maxPrice, selectedMaterials]);
+  }, [category, sort, maxPrice, selectedMaterials, query]);
 
   return (
     <>
       <header className="border-b hairline pt-24 pb-16 lg:pt-40 lg:pb-24">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
-          <div className="eyebrow">Katalog</div>
-          <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-7xl">Semua Karya</h1>
-          <p className="mt-6 max-w-xl text-foreground/70">
-            Rangkaian karya yang ringkas dan penuh pertimbangan — bed, kasur, dan perlengkapan lembut yang menyempurnakan sebuah kamar.
-          </p>
+          <div className="flex items-end justify-between gap-8">
+            <div>
+              <div className="eyebrow">— Katalog</div>
+              <h1 className="mt-5 font-serif text-5xl leading-[1.02] md:text-7xl">
+                {query ? "Hasil Pencarian" : "Semua Karya"}
+              </h1>
+              <p className="mt-5 max-w-xl text-foreground/70">
+                {query
+                  ? `Menampilkan karya yang cocok dengan “${qParam}”.`
+                  : "Rangkaian karya yang ringkas dan penuh pertimbangan — bed, kasur, dan perlengkapan lembut yang menyempurnakan sebuah kamar."}
+              </p>
+            </div>
+            <div className="hidden text-right font-serif text-xs tracking-[0.28em] uppercase text-muted-foreground md:block">
+              <div className="tabular-nums text-foreground">{String(filtered.length).padStart(2, "0")}</div>
+              <div className="mt-1">karya</div>
+            </div>
+          </div>
+          {query && (
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border hairline px-3 py-1.5 text-xs text-foreground/80">
+              <Search className="h-3 w-3" strokeWidth={1.4} />
+              <span>“{qParam}”</span>
+              <button
+                aria-label="Hapus pencarian"
+                onClick={() => navigate({ search: { q: undefined } as never })}
+                className="opacity-60 hover:opacity-100"
+              >
+                <X className="h-3 w-3" strokeWidth={1.4} />
+              </button>
+            </div>
+          )}
         </div>
       </header>
 

@@ -17,6 +17,7 @@ import { SiteFooter } from "../components/site-footer";
 import { CartProvider } from "../lib/cart";
 import { AuthProvider } from "../lib/auth";
 import { WhatsAppFab } from "../components/whatsapp-fab";
+import { CookieConsent } from "../components/cookie-consent";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -157,6 +158,7 @@ function RootComponent() {
               <WhatsAppFab />
             </div>
           )}
+          {!isAdmin && !isAuth && <CookieConsent />}
           <Toaster position="top-right" richColors closeButton />
         </CartProvider>
       </AuthProvider>

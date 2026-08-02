@@ -1,97 +1,155 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Clock3, Package, Truck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, Clock3, Package, Truck, XCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { products } from "@/lib/products";
 
 export const Route = createFileRoute("/orders")({
   head: () => ({
     meta: [
       { title: "Pesanan Saya — Forland Living" },
-      { name: "description", content: "Lacak pesanan kasur dan bed premium Anda di Forland Living, lihat status pengiriman, dan riwayat pembelian." },
-      { property: "og:title", content: "Pesanan Saya — Forland Living" },
-      { property: "og:description", content: "Riwayat dan status pesanan Forland Living Anda." },
+      { name: "description", content: "Lacak pesanan kasur dan bed premium Anda di Forland Living." },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: OrdersPage,
 });
 
-type Status = "Diproses" | "Dikirim" | "Selesai";
-type OrderItem = { productId: string; qty: number; size: string; variant: string };
-type Order = {
-  id: string;
-  date: string;
-  status: Status;
-  eta: string;
-  address: string;
-  items: OrderItem[];
+type OrderStatus = "pending" | "processing" | "shipped" | "completed" | "cancelled";
+type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
+type OrderItem = {
+  name: string;
+  thumbnail: string;
+  variant: string;
+  size: string;
+  price: number;
+  quantity: number;
   subtotal: number;
-  shipping: number;
 };
 
-const mockOrders: Order[] = [
-  {
-    id: "FL-2411-0821",
-    date: "12 November 2026",
-    status: "Dikirim",
-    eta: "Tiba 18 November",
-    address: "Kemang Timur No. 24, Jakarta Selatan",
-    items: [
-      { productId: products[0]?.id ?? "aera-bed", qty: 1, size: "180 x 200", variant: "Fullset Cream" },
-      { productId: products[2]?.id ?? "linen-set", qty: 2, size: "Queen", variant: "Natural" },
-    ],
-    subtotal: 24800000,
-    shipping: 0,
-  },
-  {
-    id: "FL-2410-0492",
-    date: "28 Oktober 2026",
-    status: "Selesai",
-    eta: "Diterima 04 November",
-    address: "Menteng Dalam No. 11, Jakarta Pusat",
-    items: [
-      { productId: products[1]?.id ?? "oslo-mattress", qty: 1, size: "160 x 200", variant: "Kasur Only" },
-    ],
-    subtotal: 14500000,
-    shipping: 0,
-  },
-  {
-    id: "FL-2409-0311",
-    date: "05 Oktober 2026",
-    status: "Diproses",
-    eta: "Estimasi kirim 6–8 minggu",
-    address: "Dago Pakar Blok C, Bandung",
-    items: [
-      { productId: products[3]?.id ?? "wool-throw", qty: 1, size: "200 x 200", variant: "Paket Lengkap" },
-    ],
-    subtotal: 32000000,
-    shipping: 0,
-  },
-];
+type ShippingAddress = {
+  name: string;
+  phone: string;
+  province: string;
+  city: string;
+  district: string;
+  postalCode: string;
+  address: string;
+};
 
-function statusMeta(s: Status) {
-  if (s === "Diproses") return { icon: Clock3, dot: "bg-amber-500" };
-  if (s === "Dikirim") return { icon: Truck, dot: "bg-blue-500" };
-  return { icon: CheckCircle2, dot: "bg-emerald-600" };
+type Order = {
+  _id: string;
+  orderNumber: string;
+  items: OrderItem[];
+  subtotal: number;
+  shippingCost: number;
+  discount: number;
+  total: number;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  shippingAddress: ShippingAddress;
+  notes: string;
+  createdAt: string;
+};
+
+function statusMeta(s: OrderStatus) {
+  switch (s) {
+    case "pending":    return { label: "Menunggu",   icon: Clock3,       dot: "bg-amber-400"   };
+    case "processing": return { label: "Diproses",   icon: Clock3,       dot: "bg-amber-500"   };
+    case "shipped":    return { label: "Dikirim",    icon: Truck,        dot: "bg-blue-500"    };
+    case "completed":  return { label: "Selesai",    icon: CheckCircle2, dot: "bg-emerald-600" };
+    case "cancelled":  return { label: "Dibatalkan", icon: XCircle,      dot: "bg-red-500"     };
+  }
+}
+
+function paymentMeta(s: PaymentStatus) {
+  switch (s) {
+    case "pending":  return { label: "Belum Dibayar", color: "text-amber-500"   };
+    case "paid":     return { label: "Lunas",         color: "text-emerald-600" };
+    case "failed":   return { label: "Gagal",         color: "text-red-500"     };
+    case "refunded": return { label: "Direfund",      color: "text-blue-500"    };
+  }
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("id-ID", {
+    day: "numeric", month: "long", year: "numeric",
+  });
 }
 
 function OrdersPage() {
   const { user, ready } = useAuth();
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<string>(mockOrders[0].id);
+
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [selected, setSelected] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (ready && !user) navigate({ to: "/auth", search: { redirect: "/orders", mode: "login" }, replace: true });
+    if (ready && !user) {
+      navigate({ to: "/auth", search: { redirect: "/orders", mode: "login" }, replace: true });
+    }
   }, [ready, user, navigate]);
 
-  const detail = useMemo(() => mockOrders.find((o) => o.id === selected) ?? mockOrders[0], [selected]);
+  useEffect(() => {
+    if (!user) return;
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/my`, {
+          credentials: "include",
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan");
+        const list: Order[] = json.data.items ?? [];
+        setOrders(list);
+        if (list.length > 0) {
+          const detailRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/my/${list[0]._id}`, {
+            credentials: "include",
+          });
+          const detailJson = await detailRes.json();
+          if (detailRes.ok) setSelected(detailJson.data);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [user]);
 
-  if (!user) {
+  const fetchDetail = async (id: string) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/my/${id}`, {
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message);
+      setSelected(json.data);
+    } catch {}
+  };
+
+  if (!ready || (ready && !user)) {
     return (
       <div className="mx-auto max-w-md px-6 pt-32 pb-16 text-center">
-        <div className="eyebrow">Akun</div>
-        <h1 className="mt-4 font-serif text-3xl">Memuat pesanan Anda…</h1>
+        <h1 className="font-serif text-3xl">Memuat pesanan Anda…</h1>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-md px-6 pt-32 pb-16 text-center text-sm text-muted-foreground">
+        Memuat pesanan…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-md px-6 pt-32 pb-16 text-center text-sm text-red-500">
+        {error}
       </div>
     );
   }
@@ -102,129 +160,177 @@ function OrdersPage() {
         <div className="eyebrow">Akun · Pesanan</div>
         <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-5xl md:text-6xl">Pesanan Saya</h1>
         <p className="mt-6 text-[0.98rem] leading-[1.85] text-foreground/70">
-          Halo, <span className="text-foreground">{user.name}</span>. Berikut adalah pesanan Anda beserta status pengirimannya. Setiap pesanan dirawat oleh tim atelier kami.
+          Halo, <span className="text-foreground">{selected?.shippingAddress?.name ?? user?.email}</span>. Berikut adalah pesanan Anda beserta status pengirimannya.
         </p>
       </div>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_1.4fr] lg:gap-12">
-        <aside className="border hairline">
-          <div className="border-b hairline p-5">
-            <div className="eyebrow">Riwayat</div>
-            <div className="mt-1 text-sm text-muted-foreground tabular-nums">{mockOrders.length} pesanan</div>
-          </div>
-          <ul>
-            {mockOrders.map((o) => {
-              const active = o.id === selected;
-              const meta = statusMeta(o.status);
-              return (
-                <li key={o.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(o.id)}
-                    className={
-                      "flex w-full items-start gap-4 border-b hairline p-5 text-left transition-colors last:border-b-0 " +
-                      (active ? "bg-surface" : "hover:bg-surface/60")
-                    }
-                  >
-                    <span className={`mt-1.5 h-2 w-2 rounded-full ${meta.dot}`} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-3">
-                        <div className="truncate font-serif text-base">{o.id}</div>
-                        <div className="shrink-0 text-[0.7rem] tracking-[0.2em] uppercase text-muted-foreground">{o.status}</div>
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">{o.date} · {o.items.length} item</div>
-                      <div className="mt-2 text-sm tabular-nums">Rp{o.subtotal.toLocaleString("id-ID")}</div>
-                    </div>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-
-        <section className="border hairline p-6 sm:p-8">
-          <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
-            <div className="min-w-0">
-              <div className="eyebrow">Detail Pesanan</div>
-              <h2 className="mt-3 truncate font-serif text-2xl sm:text-3xl">{detail.id}</h2>
-              <div className="mt-2 text-sm text-muted-foreground">Dipesan {detail.date}</div>
+      {orders.length === 0 ? (
+        <div className="mt-16 border-t hairline pt-16 text-center">
+          <p className="font-serif text-2xl text-foreground/70">Belum ada pesanan.</p>
+          <Link
+            to="/shop"
+            search={{ q: undefined }}
+            className="mt-8 inline-block border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
+          >
+            Jelajahi Koleksi
+          </Link>
+        </div>
+      ) : (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_1.4fr] lg:gap-12">
+          <aside className="border hairline">
+            <div className="border-b hairline p-5">
+              <div className="eyebrow">Riwayat</div>
+              <div className="mt-1 text-sm text-muted-foreground tabular-nums">{orders.length} pesanan</div>
             </div>
-            <StatusPill status={detail.status} />
-          </header>
-
-          <Timeline status={detail.status} />
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2">
-            <InfoCard label="Alamat Pengiriman">{detail.address}</InfoCard>
-            <InfoCard label="Estimasi">{detail.eta}</InfoCard>
-          </div>
-
-          <div className="mt-10">
-            <div className="eyebrow mb-4">Item ({detail.items.length})</div>
-            <ul className="border-t hairline">
-              {detail.items.map((it, idx) => {
-                const p = products.find((x) => x.id === it.productId) ?? products[0];
+            <ul>
+              {orders.map((o) => {
+                const active = selected?._id === o._id;
+                const meta = statusMeta(o.status);
                 return (
-                  <li key={idx} className="grid grid-cols-[72px_1fr_auto] items-center gap-4 border-b hairline py-4 sm:grid-cols-[96px_1fr_auto] sm:gap-6">
-                    <div className="aspect-square bg-surface">
-                      <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
-                    </div>
-                    <div className="min-w-0">
-                      <Link to="/products/$id" params={{ id: p.id }} className="truncate font-serif text-base hover:opacity-70 sm:text-lg">
-                        {p.name}
-                      </Link>
-                      <div className="mt-1 text-[0.72rem] tracking-[0.16em] uppercase text-muted-foreground">
-                        {it.size} · {it.variant} · ×{it.qty}
+                  <li key={o._id}>
+                    <button
+                      type="button"
+                      onClick={() => fetchDetail(o._id)}
+                      className={
+                        "flex w-full items-start gap-4 border-b hairline p-5 text-left transition-colors last:border-b-0 " +
+                        (active ? "bg-surface" : "hover:bg-surface/60")
+                      }
+                    >
+                      <span className={`mt-1.5 h-2 w-2 rounded-full ${meta.dot}`} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-3">
+                          <div className="truncate font-serif text-base">{o.orderNumber}</div>
+                          <div className="shrink-0 text-[0.7rem] tracking-[0.2em] uppercase text-muted-foreground">{meta.label}</div>
+                        </div>
+                        <div className="mt-1 text-xs text-muted-foreground">{formatDate(o.createdAt)} · {o.items?.length ?? 0} item</div>
+                        <div className="mt-2 text-sm tabular-nums">Rp{o.total.toLocaleString("id-ID")}</div>
                       </div>
-                    </div>
-                    <div className="tabular-nums text-sm">Rp{(p.price * it.qty).toLocaleString("id-ID")}</div>
+                    </button>
                   </li>
                 );
               })}
             </ul>
-            <dl className="mt-6 space-y-2 text-sm">
-              <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd className="tabular-nums">Rp{detail.subtotal.toLocaleString("id-ID")}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">Pengiriman</dt><dd>{detail.shipping === 0 ? "Gratis" : `Rp${detail.shipping.toLocaleString("id-ID")}`}</dd></div>
-              <div className="mt-3 flex justify-between border-t hairline pt-3 text-base">
-                <span>Total</span>
-                <span className="tabular-nums">Rp{(detail.subtotal + detail.shipping).toLocaleString("id-ID")}</span>
-              </div>
-            </dl>
-          </div>
+          </aside>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <button className="bg-foreground px-6 py-3 text-[0.72rem] tracking-[0.24em] uppercase text-background hover:opacity-90">
-              Hubungi Atelier
-            </button>
-            <Link to="/shop" className="border hairline px-6 py-3 text-[0.72rem] tracking-[0.24em] uppercase hover:border-foreground">
-              Belanja Lagi
-            </Link>
-          </div>
-        </section>
-      </div>
+          {selected && (
+            <section className="border hairline p-6 sm:p-8">
+              <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+                <div className="min-w-0">
+                  <div className="eyebrow">Detail Pesanan</div>
+                  <h2 className="mt-3 truncate font-serif text-2xl sm:text-3xl">{selected.orderNumber}</h2>
+                  <div className="mt-2 text-sm text-muted-foreground">Dipesan {formatDate(selected.createdAt)}</div>
+                </div>
+                <StatusPill status={selected.status} />
+              </header>
+
+              <Timeline status={selected.status} />
+
+              <div className="mt-10 grid gap-6 sm:grid-cols-2">
+                <InfoCard label="Alamat Pengiriman">
+                  {[
+                    selected.shippingAddress?.address,
+                    selected.shippingAddress?.district,
+                    selected.shippingAddress?.city,
+                    selected.shippingAddress?.province,
+                    selected.shippingAddress?.postalCode,
+                  ].filter(Boolean).join(", ")}
+                </InfoCard>
+                <InfoCard label="Status Pembayaran">
+                  <span className={paymentMeta(selected.paymentStatus).color}>
+                    {paymentMeta(selected.paymentStatus).label}
+                  </span>
+                </InfoCard>
+              </div>
+
+              <div className="mt-10">
+                <div className="eyebrow mb-4">Item ({selected.items?.length ?? 0})</div>
+                <ul className="border-t hairline">
+                  {(selected.items ?? []).map((it, idx) => (
+                    <li key={idx} className="grid grid-cols-[72px_1fr_auto] items-center gap-4 border-b hairline py-4 sm:grid-cols-[96px_1fr_auto] sm:gap-6">
+                      <div className="aspect-square bg-surface">
+                        <img src={it.thumbnail} alt={it.name} className="h-full w-full object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate font-serif text-base sm:text-lg">{it.name}</div>
+                        <div className="mt-1 text-[0.72rem] tracking-[0.16em] uppercase text-muted-foreground">
+                          {it.size && <span>{it.size}</span>}
+                          {it.size && it.variant && <span> · </span>}
+                          {it.variant && <span>{it.variant}</span>}
+                          <span> · ×{it.quantity}</span>
+                        </div>
+                      </div>
+                      <div className="tabular-nums text-sm">Rp{it.subtotal.toLocaleString("id-ID")}</div>
+                    </li>
+                  ))}
+                </ul>
+                <dl className="mt-6 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Subtotal</dt>
+                    <dd className="tabular-nums">Rp{selected.subtotal.toLocaleString("id-ID")}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Pengiriman</dt>
+                    <dd>{selected.shippingCost === 0 ? "Gratis" : `Rp${selected.shippingCost.toLocaleString("id-ID")}`}</dd>
+                  </div>
+                  {selected.discount > 0 && (
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Diskon</dt>
+                      <dd className="tabular-nums text-emerald-600">-Rp{selected.discount.toLocaleString("id-ID")}</dd>
+                    </div>
+                  )}
+                  <div className="mt-3 flex justify-between border-t hairline pt-3 text-base">
+                    <span>Total</span>
+                    <span className="tabular-nums">Rp{selected.total.toLocaleString("id-ID")}</span>
+                  </div>
+                </dl>
+              </div>
+
+              {selected.notes && (
+                <div className="mt-6 border-t hairline pt-6 text-sm text-muted-foreground">
+                  <span className="eyebrow block mb-1">Catatan</span>
+                  {selected.notes}
+                </div>
+              )}
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/shop"
+                  search={{ q: undefined }}
+                  className="border hairline px-6 py-3 text-[0.72rem] tracking-[0.24em] uppercase hover:border-foreground"
+                >
+                  Belanja Lagi
+                </Link>
+              </div>
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function StatusPill({ status }: { status: Status }) {
+function StatusPill({ status }: { status: OrderStatus }) {
   const meta = statusMeta(status);
   const Icon = meta.icon;
   return (
     <span className="inline-flex shrink-0 items-center gap-2 border hairline px-3 py-1.5 text-[0.7rem] tracking-[0.2em] uppercase">
-      <Icon className="h-3.5 w-3.5" /> {status}
+      <Icon className="h-3.5 w-3.5" /> {meta.label}
     </span>
   );
 }
 
-function Timeline({ status }: { status: Status }) {
-  const steps: { key: Status | "Dipesan"; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { key: "Dipesan", label: "Dipesan", icon: Package },
-    { key: "Diproses", label: "Diproses", icon: Clock3 },
-    { key: "Dikirim", label: "Dikirim", icon: Truck },
-    { key: "Selesai", label: "Selesai", icon: CheckCircle2 },
+function Timeline({ status }: { status: OrderStatus }) {
+  const steps: { key: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { key: "ordered",    label: "Dipesan",  icon: Package      },
+    { key: "processing", label: "Diproses", icon: Clock3       },
+    { key: "shipped",    label: "Dikirim",  icon: Truck        },
+    { key: "completed",  label: "Selesai",  icon: CheckCircle2 },
   ];
-  const idxByStatus: Record<Status, number> = { Diproses: 1, Dikirim: 2, Selesai: 3 };
-  const active = idxByStatus[status];
+
+  const idxByStatus: Record<string, number> = {
+    pending: 0, processing: 1, shipped: 2, completed: 3, cancelled: 1,
+  };
+  const active = idxByStatus[status] ?? 0;
 
   return (
     <ol className="mt-8 grid grid-cols-4 gap-2">

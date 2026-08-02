@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { api } from "./api";
 
 export type AuthUser = {
-  name: string;
+  id: string;
   email: string;
+  role: string;
 };
 
 type AuthCtx = {
@@ -10,56 +12,98 @@ type AuthCtx = {
   ready: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
   register: (name: string, email: string, password: string) => Promise<AuthUser>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
-const KEY = "forland.auth.v1";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {}
-    setReady(true);
-  }, []);
+    (async () => {
+      try {
+        const res = await api<{
+          data: AuthUser;
+        }>("/auth/me", {
+          credentials: "include",
+        });
 
-  useEffect(() => {
-    if (!ready) return;
-    try {
-      if (user) localStorage.setItem(KEY, JSON.stringify(user));
-      else localStorage.removeItem(KEY);
-    } catch {}
-  }, [user, ready]);
+        setUser(res.data);
+      } catch {
+        setUser(null);
+      } finally {
+        setReady(true);
+      }
+    })();
+  }, []);
 
   const value = useMemo<AuthCtx>(
     () => ({
       user,
       ready,
+
       async login(email, password) {
-        await new Promise((r) => setTimeout(r, 550));
-        if (!email || password.length < 6) {
-          throw new Error("Email atau kata sandi tidak valid.");
-        }
-        const u: AuthUser = { email, name: email.split("@")[0].replace(/\W+/g, " ") || "Tamu" };
-        setUser(u);
-        return u;
+        await api<{
+          data: {
+            user: AuthUser;
+          };
+        }>("/auth/login", {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        });
+
+        const me = await api<{
+          data: AuthUser;
+        }>("/auth/me", {
+          credentials: "include",
+        });
+
+        setUser(me.data);
+
+        return me.data;
       },
+
       async register(name, email, password) {
-        await new Promise((r) => setTimeout(r, 600));
-        if (!name || !email || password.length < 6) {
-          throw new Error("Lengkapi seluruh isian untuk membuat akun.");
-        }
-        const u: AuthUser = { name, email };
-        setUser(u);
-        return u;
+        await api<{
+          data: {
+            user: AuthUser;
+          };
+        }>("/auth/register", {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        });
+
+        const me = await api<{
+          data: AuthUser;
+        }>("/auth/me", {
+          credentials: "include",
+        });
+
+        setUser(me.data);
+
+        return me.data;
       },
-      logout() {
-        setUser(null);
+
+      async logout() {
+        try {
+          await api("/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+        } finally {
+          setUser(null);
+        }
       },
     }),
     [user, ready],
@@ -70,6 +114,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const c = useContext(Ctx);
-  if (!c) throw new Error("useAuth must be used within AuthProvider");
+
+  if (!c) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+
   return c;
 }

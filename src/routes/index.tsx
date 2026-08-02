@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { api } from "@/lib/api";
 import heroImg from "@/assets/hero-bedroom.jpg";
 import philosophyImg from "@/assets/philosophy.jpg";
 import craftImg from "@/assets/craftsmanship.jpg";
@@ -22,8 +23,7 @@ function Index() {
     <>
       <Hero />
       <PromoBanner />
-      <Collections />
-      <BestSellers />
+      <Categories />
       <Philosophy />
       <Craftsmanship />
       <MaterialStory />
@@ -57,6 +57,7 @@ function Hero() {
           <div className="mt-10 flex flex-wrap items-center gap-8">
             <Link
               to="/shop"
+              search={{ q: undefined }}
               className="group inline-flex items-center gap-3 border-b border-background/70 pb-2 text-[0.78rem] tracking-[0.24em] uppercase transition-colors hover:border-background"
             >
               Jelajahi Koleksi
@@ -80,110 +81,203 @@ function Hero() {
 }
 
 function PromoBanner() {
-  const slides = [
-    {
-      tag: "Gajian Sale",
-      title: "Hemat Rp1.300.000",
-      sub: "Kasur premium + gratis ongkir Jabodetabek. Berakhir 30 hari lagi.",
-      cta: "Belanja Sekarang",
-      bg: "linear-gradient(115deg, #f4e2c9 0%, #e8b878 55%, #c98a3f 100%)",
-      fg: "#1a1a1a",
-      image: bed1,
-    },
-    {
-      tag: "Free Shipping",
-      title: "Gratis Pengiriman",
-      sub: "Setiap pembelian kasur ke seluruh kota besar di Indonesia.",
-      cta: "Lihat Koleksi",
-      bg: "linear-gradient(115deg, #1a1a1a 0%, #3a3a3a 100%)",
-      fg: "#f5f5f5",
-      image: bed2,
-    },
-    {
-      tag: "10-Year Guarantee",
-      title: "Jaminan Struktural",
-      sub: "Kepercayaan diri dari pengerjaan lokal yang jujur dan teruji.",
-      cta: "Pelajari Lebih",
-      bg: "linear-gradient(115deg, #d9d9d9 0%, #b8b8b8 100%)",
-      fg: "#1a1a1a",
-      image: gallery1,
-    },
-  ];
-  const [i, setI] = useState(0);
-  const n = slides.length;
+  type Banner = {
+    _id: string;
+    image: string;
+    link?: string;
+    sortOrder: number;
+  };
+
+  const [slides, setSlides] = useState<Banner[]>([]);
+  const [current, setCurrent] = useState(0);
+
   useEffect(() => {
-    const id = setInterval(() => setI((v) => (v + 1) % n), 5500);
+    api<{ data: Banner[] }>("/banners")
+      .then((res) => {
+        setSlides(res.data);
+      })
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    console.log("BANNERS:", slides);
+    if (slides.length <= 1) return;
+
+    const id = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 5500);
+
     return () => clearInterval(id);
-  }, [n]);
-  const go = (d: number) => setI((v) => (v + d + n) % n);
+  }, [slides]);
+
+  const go = (direction: number) => {
+    setCurrent((prev) => (prev + direction + slides.length) % slides.length);
+  };
+
+  if (slides.length === 0) return null;
 
   return (
     <section className="mx-auto max-w-[1600px] px-6 pt-10 md:pt-16 lg:px-12 lg:pt-20">
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden rounded">
         <div
-          className="flex transition-transform duration-[900ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
-          style={{ transform: `translateX(-${i * 100}%)` }}
+          className="flex transition-transform duration-700 ease-in-out"
+          style={{
+            transform: `translateX(-${current * 100}%)`,
+          }}
         >
-          {slides.map((s) => (
-            <div key={s.title} className="min-w-full">
-              <div
-                className="relative grid min-h-[340px] grid-cols-1 md:min-h-[380px] md:grid-cols-[1.15fr_1fr]"
-                style={{ background: s.bg, color: s.fg }}
-              >
-                <div className="flex flex-col justify-center px-6 py-10 md:px-14 md:py-14">
-                  <span
-                    className="inline-flex w-fit items-center gap-2 px-3 py-1 text-[0.7rem] tracking-[0.24em] uppercase"
-                    style={{ background: s.fg, color: s.bg.includes("#1a1a1a") ? "#1a1a1a" : "#fff" }}
-                  >
-                    {s.tag}
-                  </span>
-                  <h2 className="mt-5 font-serif text-4xl leading-[1.05] md:text-6xl">{s.title}</h2>
-                  <p className="mt-4 max-w-md text-[0.95rem] leading-relaxed opacity-80">{s.sub}</p>
-                  <Link
-                    to="/shop"
-                    className="mt-7 inline-flex w-fit items-center gap-3 border px-6 py-3 text-[0.72rem] tracking-[0.24em] uppercase transition-opacity hover:opacity-80"
-                    style={{ borderColor: s.fg }}
-                  >
-                    {s.cta} →
-                  </Link>
-                </div>
-                <div className="relative h-56 overflow-hidden md:h-auto">
-                  <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                </div>
-              </div>
+          {slides.map((banner) => (
+            <div
+              key={banner._id}
+              className="min-w-full"
+            >
+              {banner.link ? (
+                <a
+                  href={banner.link}
+                  target="_self"
+                >
+                  <img
+                    src={banner.image}
+                    alt=""
+                    className="h-[260px] w-full object-cover md:h-[360px] lg:h-[360px]"
+                  />
+                </a>
+              ) : (
+                <img
+                  src={banner.image}
+                  alt=""
+                  className="h-[260px] w-full object-cover md:h-[360px] lg:h-[360px]"
+                />
+              )}
             </div>
           ))}
         </div>
 
-        <button
-          onClick={() => go(-1)}
-          aria-label="Previous slide"
-          className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center bg-background/85 text-foreground shadow-sm backdrop-blur transition-opacity hover:opacity-100 md:inline-flex"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <button
-          onClick={() => go(1)}
-          aria-label="Next slide"
-          className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center bg-background/85 text-foreground shadow-sm backdrop-blur transition-opacity hover:opacity-100 md:inline-flex"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-
-        <div className="absolute inset-x-0 bottom-4 flex items-center justify-center gap-2">
-          {slides.map((_, k) => (
+        {slides.length > 1 && (
+          <>
             <button
-              key={k}
-              aria-label={`Go to slide ${k + 1}`}
-              onClick={() => setI(k)}
-              className={
-                "h-[3px] transition-all duration-500 " +
-                (k === i ? "w-8 bg-foreground" : "w-4 bg-foreground/40")
-              }
-            />
-          ))}
-        </div>
+              onClick={() => go(-1)}
+              className="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 backdrop-blur hover:bg-white md:flex"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+
+            <button
+              onClick={() => go(1)}
+              className="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 backdrop-blur hover:bg-white md:flex"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+
+            <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrent(index)}
+                  className={
+                    current === index
+                      ? "h-1 w-8 bg-white transition-all"
+                      : "h-1 w-4 bg-white/40 transition-all"
+                  }
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
+    </section>
+  );
+}
+
+function Categories() {
+  type Category = {
+    _id: string;
+    name: string;
+    slug: string;
+    description: string;
+    image: string;
+  };
+
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    api<{ data: Category[] }>("/categories")
+      .then((res) => {
+        setCategories(res.data);
+      })
+      .catch(console.error);
+  }, []);
+
+
+  if (!categories.length) return null;
+
+
+  return (
+    <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:py-32">
+
+      <div className="mb-12">
+        <div className="eyebrow">
+          Koleksi
+        </div>
+
+        <h2 className="mt-4 font-serif text-4xl md:text-5xl">
+          Temukan ruang istirahat Anda.
+        </h2>
+      </div>
+
+
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+
+        {categories.map((category) => (
+
+          <Link
+            key={category._id}
+            to="/shop"
+            search={{
+              q: category.slug
+            }}
+            className="group block"
+          >
+
+            <div className="aspect-[3/4] overflow-hidden bg-surface">
+
+              <img
+                src={category.image}
+                alt={category.name}
+                className="
+                  h-full
+                  w-full
+                  object-cover
+                  transition-transform
+                  duration-[1600ms]
+                  ease-out
+                  group-hover:scale-[1.04]
+                "
+              />
+
+            </div>
+
+
+            <div className="mt-6">
+
+              <h3 className="font-serif text-2xl">
+                {category.name}
+              </h3>
+
+
+              <p className="mt-2 text-sm text-muted-foreground">
+                {category.description}
+              </p>
+
+
+            </div>
+
+
+          </Link>
+
+        ))}
+
+      </div>
+
     </section>
   );
 }
@@ -221,50 +315,7 @@ function Philosophy() {
   );
 }
 
-function Collections() {
-  const items = [
-    { title: "Bed", copy: "Rangka dari oak, walnut, dan pelapis linen.", img: bed1, id: "beds" },
-    { title: "Kasur", copy: "Lima belas lapis dukungan yang tenang.", img: gallery2, id: "mattresses" },
-    { title: "Kamar Tidur", copy: "Sebuah ruang, dirancang menyeluruh.", img: gallery1, id: "bedroom" },
-    { title: "Koleksi Baru", copy: "Musim ini, diperkenalkan dengan lembut.", img: bed2, id: "new" },
-  ];
-  return (
-    <section className="border-t hairline bg-surface">
-      <div className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <div className="eyebrow">Koleksi</div>
-            <h2 className="mt-4 font-serif text-4xl md:text-5xl">Disusun untuk sebuah ruang.</h2>
-          </div>
-          <Link
-            to="/shop"
-            className="border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
-          >
-            Lihat Semua
-          </Link>
-        </div>
-        <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((c) => (
-            <Link key={c.id} to="/shop" className="group block">
-              <div className="overflow-hidden aspect-[3/4] bg-background">
-                <img
-                  src={c.img}
-                  alt={c.title}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.04]"
-                />
-              </div>
-              <div className="mt-6">
-                <h3 className="font-serif text-2xl">{c.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{c.copy}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+
 
 function Craftsmanship() {
   const pillars = [
@@ -343,29 +394,7 @@ function MaterialStory() {
   );
 }
 
-function BestSellers() {
-  return (
-    <section className="mx-auto max-w-[1600px] px-6 py-14 lg:px-12 lg:py-32">
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <div className="eyebrow">Karya Pilihan</div>
-          <h2 className="mt-4 font-serif text-4xl md:text-5xl">Dicintai dengan tenang.</h2>
-        </div>
-        <Link
-          to="/shop"
-          className="border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
-        >
-          Lihat Semua
-        </Link>
-      </div>
-      <div className="mt-12 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
-      </div>
-    </section>
-  );
-}
+
 
 function Gallery() {
   return (

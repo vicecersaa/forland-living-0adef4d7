@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -16,42 +17,92 @@ export const Route = createFileRoute("/checkout")({
 
 function CheckoutPage() {
   const { resolved, subtotal, clear } = useCart();
+  const { user, ready } = useAuth();
   const navigate = useNavigate();
-  const [placed, setPlaced] = useState(false);
-  const [method, setMethod] = useState<"card" | "transfer">("card");
 
-  const shipping = 0;
+  useEffect(() => {
+    if (!ready) return;
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: "/checkout", mode: "login" } });
+    }
+  }, [user, ready, navigate]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    province: "",
+    city: "",
+    district: "",
+    postalCode: "",
+    address: "",
+    notes: "",
+  });
+
   const tax = Math.round(subtotal * 0.11);
-  const total = subtotal + shipping + tax;
+  const total = subtotal + tax;
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setPlaced(true);
-    clear();
-    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  if (placed) {
-    return (
-      <div className="mx-auto grid min-h-[80vh] max-w-2xl place-items-center px-6 py-12 text-center">
-        <div>
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border hairline">
-            <Check className="h-5 w-5" />
-          </div>
-          <div className="eyebrow mt-8">Pesanan Dikonfirmasi</div>
-          <h1 className="mt-4 font-serif text-4xl leading-[1.1] md:text-5xl">Terima kasih.</h1>
-          <p className="mt-6 text-[0.98rem] leading-[1.85] text-foreground/70">
-            Konfirmasi telah dikirim ke email Anda. Atelier kami akan segera menghubungi terkait detail pengiriman.
-          </p>
-          <Link
-            to="/"
-            className="mt-10 inline-block border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
-          >
-            Kembali ke Beranda
-          </Link>
-        </div>
-      </div>
-    );
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // Step 1: Buat order
+      const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/checkout`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shippingAddress: {
+            name: form.name,
+            phone: form.phone,
+            province: form.province,
+            city: form.city,
+            district: form.district,
+            postalCode: form.postalCode,
+            address: form.address,
+          },
+          notes: form.notes,
+        }),
+      });
+
+      const checkoutJson = await checkoutRes.json();
+
+      if (!checkoutRes.ok) {
+        throw new Error(checkoutJson.message ?? "Gagal membuat pesanan");
+      }
+
+      const orderId = checkoutJson.data._id;
+
+      // Step 2: Buat payment token
+      const paymentRes = await fetch(`${import.meta.env.VITE_API_URL}/payment/${orderId}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const paymentJson = await paymentRes.json();
+
+      if (!paymentRes.ok) {
+        throw new Error(paymentJson.message ?? "Gagal membuat pembayaran");
+      }
+
+      // Step 3: Redirect ke halaman payment Midtrans
+      const { redirectUrl } = paymentJson.data;
+      clear();
+      window.location.href = redirectUrl;
+
+    } catch (err) {
+      setLoading(false);
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    }
   }
 
   if (resolved.length === 0) {
@@ -60,7 +111,7 @@ function CheckoutPage() {
         <h1 className="font-serif text-4xl">Keranjang Anda kosong.</h1>
         <p className="mt-4 text-foreground/70">Tambahkan karya terlebih dulu sebelum melanjutkan ke pembayaran.</p>
         <button
-          onClick={() => navigate({ to: "/shop" })}
+          onClick={() => navigate({ to: "/shop", search: { q: undefined } })}
           className="mt-8 border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
         >
           Jelajahi Koleksi
@@ -78,57 +129,40 @@ function CheckoutPage() {
 
       <form onSubmit={onSubmit} className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
         <div className="space-y-14">
-          <Section title="Kontak">
-            <Field label="Email" name="email" type="email" required />
-            <Field label="No. Telepon" name="phone" type="tel" />
+
+          <Section title="Informasi Penerima">
+            <Field label="Nama Lengkap" name="name" value={form.name} onChange={handleChange} required />
+            <Field label="No. Telepon" name="phone" type="tel" value={form.phone} onChange={handleChange} required />
           </Section>
 
-          <Section title="Pengiriman">
+          <Section title="Alamat Pengiriman">
+            <Field label="Alamat Lengkap" name="address" value={form.address} onChange={handleChange} required />
             <div className="grid gap-6 sm:grid-cols-2">
-              <Field label="Nama Depan" name="firstName" required />
-              <Field label="Nama Belakang" name="lastName" required />
+              <Field label="Kecamatan" name="district" value={form.district} onChange={handleChange} required />
+              <Field label="Kota" name="city" value={form.city} onChange={handleChange} required />
             </div>
-            <Field label="Alamat" name="address" required />
-            <div className="grid gap-6 sm:grid-cols-3">
-              <Field label="Kota" name="city" required />
-              <Field label="Kode Pos" name="postal" required />
-              <Field label="Negara" name="country" required />
+            <div className="grid gap-6 sm:grid-cols-2">
+              <Field label="Provinsi" name="province" value={form.province} onChange={handleChange} required />
+              <Field label="Kode Pos" name="postalCode" value={form.postalCode} onChange={handleChange} required />
             </div>
           </Section>
 
-          <Section title="Metode Pembayaran">
-            <div className="grid gap-2">
-              {(["card", "transfer"] as const).map((m) => (
-                <label
-                  key={m}
-                  className={
-                    "flex cursor-pointer items-center gap-4 border p-5 transition-colors " +
-                    (method === m ? "border-foreground" : "hairline hover:border-foreground/50")
-                  }
-                >
-                  <input
-                    type="radio"
-                    name="method"
-                    checked={method === m}
-                    onChange={() => setMethod(m)}
-                    className="accent-foreground"
-                  />
-                  <span className="text-[0.82rem] tracking-[0.2em] uppercase">
-                    {m === "card" ? "Kartu Kredit / Debit" : "Transfer Bank"}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {method === "card" && (
-              <div className="mt-6 space-y-6">
-                <Field label="Nomor Kartu" name="card" placeholder="1234 5678 9012 3456" />
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <Field label="Masa Berlaku" name="expiry" placeholder="MM / YY" />
-                  <Field label="CVC" name="cvc" placeholder="123" />
-                </div>
-              </div>
-            )}
+          <Section title="Catatan">
+            <label className="block">
+              <span className="eyebrow block">Catatan Pesanan (opsional)</span>
+              <textarea
+                name="notes"
+                value={form.notes}
+                onChange={handleChange}
+                rows={3}
+                className="mt-2 w-full border-b hairline bg-transparent py-3 text-[0.95rem] outline-none transition-colors focus:border-foreground resize-none"
+              />
+            </label>
           </Section>
+
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
         </div>
 
         <aside className="lg:sticky lg:top-32 lg:self-start">
@@ -138,24 +172,42 @@ function CheckoutPage() {
               {resolved.map((item) => (
                 <li key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
                   <div className="h-20 w-16 flex-shrink-0 bg-surface">
-                    <img src={item.product.image} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={item.product.thumbnail || item.product.images?.[0]}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="flex flex-1 flex-col justify-between text-sm">
                     <div>
                       <div className="font-serif text-base leading-tight">{item.product.name}</div>
                       <div className="mt-1 text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">
-                        {item.size} · {item.color} · ×{item.qty}
+                        {item.size && <span>{item.size}</span>}
+                        {item.size && item.color && <span> · </span>}
+                        {item.color && <span>{item.color}</span>}
+                        <span> · ×{item.qty}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="tabular-nums">Rp{(item.product.price * item.qty).toLocaleString("id-ID")}</div>
+                  <div className="tabular-nums text-sm">
+                    Rp{(item.product.minPrice * item.qty).toLocaleString("id-ID")}
+                  </div>
                 </li>
               ))}
             </ul>
             <dl className="mt-8 space-y-3 border-t hairline pt-6 text-sm">
-              <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd className="tabular-nums">Rp{subtotal.toLocaleString("id-ID")}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">Pengiriman</dt><dd>Gratis</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">Estimasi PPN</dt><dd className="tabular-nums">Rp{tax.toLocaleString("id-ID")}</dd></div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Subtotal</dt>
+                <dd className="tabular-nums">Rp{subtotal.toLocaleString("id-ID")}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Pengiriman</dt>
+                <dd>Gratis</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Estimasi PPN 11%</dt>
+                <dd className="tabular-nums">Rp{tax.toLocaleString("id-ID")}</dd>
+              </div>
             </dl>
             <div className="mt-6 flex justify-between border-t hairline pt-6">
               <span>Total</span>
@@ -163,9 +215,10 @@ function CheckoutPage() {
             </div>
             <button
               type="submit"
-              className="mt-8 block w-full bg-foreground py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90"
+              disabled={loading}
+              className="mt-8 block w-full bg-foreground py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90 disabled:opacity-50"
             >
-              Buat Pesanan
+              {loading ? "Memproses..." : "Buat Pesanan"}
             </button>
             <Link
               to="/cart"
@@ -195,12 +248,16 @@ function Field({
   type = "text",
   required,
   placeholder,
+  value,
+  onChange,
 }: {
   label: string;
   name: string;
   type?: string;
   required?: boolean;
   placeholder?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <label className="block">
@@ -210,6 +267,8 @@ function Field({
         type={type}
         required={required}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         className="mt-2 w-full border-b hairline bg-transparent py-3 text-[0.95rem] outline-none transition-colors focus:border-foreground"
       />
     </label>

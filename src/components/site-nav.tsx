@@ -24,6 +24,14 @@ export function SiteNav() {
   const { count } = useCart();
   const { user, logout } = useAuth();
 
+  async function handleLogout() {
+  try {
+    await logout();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -94,7 +102,7 @@ export function SiteNav() {
               </Link>
               <button
                 type="button"
-                onClick={logout}
+                onClick={handleLogout}
                 aria-label="Keluar"
                 title="Keluar"
                 className="inline-flex h-10 w-10 items-center justify-center opacity-70 transition-opacity duration-500 hover:opacity-100"
@@ -148,7 +156,7 @@ export function SiteNav() {
             {user && (
               <button
                 type="button"
-                onClick={logout}
+                onClick={handleLogout}
                 className="flex items-center gap-2 py-4 text-left text-sm tracking-[0.18em] uppercase text-muted-foreground"
               >
                 <LogOut className="h-4 w-4" strokeWidth={1.4} /> Keluar

@@ -137,7 +137,15 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
-  const isAuth = pathname === "/auth";
+  const authRoutes = [
+  "/auth",
+  "/forgot-password",
+  "/reset-password",
+];
+
+const isAuth = authRoutes.some((route) =>
+  pathname.startsWith(route),
+);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -159,7 +167,21 @@ function RootComponent() {
             </div>
           )}
           {!isAdmin && !isAuth && <CookieConsent />}
-          <Toaster position="top-right" richColors closeButton />
+          <Toaster
+            position="top-center"
+            richColors={false}
+            closeButton={false}
+            expand={false}
+            visibleToasts={1}
+            toastOptions={{
+              duration: 3000,
+              classNames: {
+                toast: "forland-toast",
+                title: "forland-toast-title",
+                description: "forland-toast-description",
+              },
+            }}
+          />
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>

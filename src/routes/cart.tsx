@@ -14,9 +14,8 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  const { resolved, subtotal, update, remove } = useCart();
-  const shipping = subtotal > 0 ? 0 : 0;
-  const total = subtotal + shipping;
+  const { resolved, subtotal, update, remove, loading } = useCart();
+  const total = subtotal;
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 pt-20 pb-12 sm:px-6 lg:px-12 lg:pt-40 lg:pb-16">
@@ -28,11 +27,14 @@ function CartPage() {
         </p>
       </div>
 
-      {resolved.length === 0 ? (
+      {loading ? (
+        <div className="mt-24 text-center text-sm text-muted-foreground">Memuat keranjang…</div>
+      ) : resolved.length === 0 ? (
         <div className="mt-12 border-t hairline pt-24 text-center">
           <p className="font-serif text-2xl text-foreground/70">Keranjang Anda masih kosong.</p>
           <Link
             to="/shop"
+            search={{ q: undefined }}
             className="mt-8 inline-block border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
           >
             Jelajahi Koleksi
@@ -42,23 +44,38 @@ function CartPage() {
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
           <ul className="border-t hairline">
             {resolved.map((item, i) => (
-              <li key={`${item.id}-${item.size}-${item.color}`} className="grid grid-cols-[96px_1fr] gap-4 border-b hairline py-6 sm:grid-cols-[140px_1fr] sm:gap-6 lg:grid-cols-[160px_1fr_auto] lg:gap-8 lg:py-8">
-                <Link to="/products/$id" params={{ id: item.id }} className="block aspect-[4/5] bg-surface">
-                  <img src={item.product.image} alt={item.product.name} className="h-full w-full object-cover" />
+              <li
+                key={`${item.id}-${item.size}-${item.color}`}
+                className="grid grid-cols-[96px_1fr] gap-4 border-b hairline py-6 sm:grid-cols-[140px_1fr] sm:gap-6 lg:grid-cols-[160px_1fr_auto] lg:gap-8 lg:py-8"
+              >
+                <Link to="/products/$slug" params={{ slug: item.product.slug }} className="block aspect-[4/5] bg-surface">
+                  <img
+                    src={item.product.thumbnail || item.product.images?.[0]}
+                    alt={item.product.name}
+                    className="h-full w-full object-cover"
+                  />
                 </Link>
+
                 <div className="flex min-w-0 flex-col justify-between">
                   <div className="min-w-0">
-                    <div className="eyebrow">{item.product.collection}</div>
-                    <Link to="/products/$id" params={{ id: item.id }} className="mt-2 block truncate font-serif text-lg leading-tight hover:opacity-70 sm:text-2xl">
+                    <div className="eyebrow">{item.product.category?.name}</div>
+                    <Link
+                      to="/products/$slug"
+                      params={{ slug: item.product.slug }}
+                      className="mt-2 block truncate font-serif text-lg leading-tight hover:opacity-70 sm:text-2xl"
+                    >
                       {item.product.name}
                     </Link>
                     <div className="mt-2 text-[0.78rem] tracking-[0.16em] uppercase text-muted-foreground">
-                      {item.size} · {item.color}
+                      {item.size && <span>{item.size}</span>}
+                      {item.size && item.color && <span> · </span>}
+                      {item.color && <span>{item.color}</span>}
                     </div>
                     <div className="mt-3 text-right tabular-nums lg:hidden">
-                      ${(item.product.price * item.qty).toLocaleString()}
+                      Rp{(item.product.minPrice * item.qty).toLocaleString("id-ID")}
                     </div>
                   </div>
+
                   <div className="mt-4 flex flex-wrap items-center gap-3">
                     <div className="flex items-center border hairline">
                       <button onClick={() => update(i, item.qty - 1)} aria-label="Decrease" className="px-3 py-2">
@@ -77,8 +94,9 @@ function CartPage() {
                     </button>
                   </div>
                 </div>
+
                 <div className="hidden text-right tabular-nums lg:block">
-                  Rp{(item.product.price * item.qty).toLocaleString("id-ID")}
+                  Rp{(item.product.minPrice * item.qty).toLocaleString("id-ID")}
                 </div>
               </li>
             ))}
@@ -88,9 +106,18 @@ function CartPage() {
             <div className="border hairline p-6 sm:p-8">
               <div className="eyebrow">Ringkasan</div>
               <dl className="mt-6 space-y-4 text-sm">
-                <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd className="tabular-nums">Rp{subtotal.toLocaleString("id-ID")}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">Pengiriman white-glove</dt><dd>Gratis</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">Pajak</dt><dd>Dihitung saat pembayaran</dd></div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Subtotal</dt>
+                  <dd className="tabular-nums">Rp{subtotal.toLocaleString("id-ID")}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Pengiriman white-glove</dt>
+                  <dd>Gratis</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Pajak</dt>
+                  <dd>Dihitung saat pembayaran</dd>
+                </div>
               </dl>
               <div className="mt-6 flex justify-between border-t hairline pt-6 text-base">
                 <span>Total</span>
@@ -104,6 +131,7 @@ function CartPage() {
               </Link>
               <Link
                 to="/shop"
+                search={{ q: undefined }}
                 className="mt-3 block border hairline py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground"
               >
                 Lanjut Berbelanja

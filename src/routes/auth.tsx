@@ -46,7 +46,7 @@ function AuthPage() {
         toast.success("Akun berhasil dibuat.", { description: "Selamat bergabung di rumah Forland." });
       }
     } catch (err) {
-      toast.error("Tidak dapat melanjutkan", {
+      toast.error("Login Gagal.", {
         description: err instanceof Error ? err.message : "Silakan coba lagi.",
       });
     } finally {
@@ -120,7 +120,12 @@ function AuthPage() {
                 <label className="inline-flex items-center gap-2 text-muted-foreground">
                   <input type="checkbox" className="accent-foreground" /> Ingat saya
                 </label>
-                <a href="#" className="tracking-[0.16em] uppercase text-muted-foreground hover:text-foreground">Lupa sandi?</a>
+                <Link
+                  to="/forgot-password"
+                  className="tracking-[0.16em] uppercase text-muted-foreground hover:text-foreground"
+                >
+                  Lupa sandi?
+                </Link>
               </div>
             )}
 

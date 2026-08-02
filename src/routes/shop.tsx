@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { products, type Product } from "@/lib/products";
+import { api } from "@/lib/api";
+import { useMemo, useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { Product } from "@/lib/types";
 import { LayoutGrid, Rows3, Star, Search, X } from "lucide-react";
 
 export const Route = createFileRoute("/shop")({
@@ -18,58 +20,135 @@ export const Route = createFileRoute("/shop")({
   component: ShopPage,
 });
 
-const categories = ["Semua", "Bed", "Kasur", "Perlengkapan"] as const;
+
 const sorts = ["Unggulan", "Harga · Terendah", "Harga · Tertinggi", "Terbaru"] as const;
-const CATEGORY_MAP: Record<(typeof categories)[number], string | null> = {
-  Semua: null,
-  Bed: "Beds",
-  Kasur: "Mattresses",
-  Perlengkapan: "Bedding",
-};
 
-const allMaterials = Array.from(
-  new Set(products.flatMap((p) => p.materials))
-).sort();
-
-const priceMin = 0;
-const priceMax = Math.ceil(Math.max(...products.map((p) => p.price)) / 500) * 500;
 
 function ShopPage() {
   const { q: qParam } = Route.useSearch();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = Route.useNavigate();
-  const [category, setCategory] = useState<(typeof categories)[number]>("Semua");
+  const [category, setCategory] = useState("Semua");
   const [sort, setSort] = useState<(typeof sorts)[number]>("Unggulan");
-  const [maxPrice, setMaxPrice] = useState<number>(priceMax);
-  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
+  const [maxPrice, setMaxPrice] = useState<number>(0);
   const [view, setView] = useState<"grid" | "list">("grid");
   const query = (qParam ?? "").trim().toLowerCase();
 
-  const toggleMaterial = (m: string) =>
-    setSelectedMaterials((cur) =>
-      cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]
+
+  const categories = useMemo(() => {
+  return [
+    "Semua",
+    ...Array.from(
+      new Set(
+        products.map(
+          (p) => p.category.name
+        )
+      )
+    )
+  ];
+}, [products]);
+
+
+const priceMin = 0;
+
+
+const priceMax = useMemo(() => {
+
+  if(products.length === 0) return 0;
+
+  return Math.max(
+    ...products.map(
+      p => p.minPrice
+    )
+  );
+
+}, [products]);
+
+useEffect(()=>{
+
+  setMaxPrice(priceMax);
+
+},[priceMax]);
+
+  useEffect(() => {
+
+  const fetchProducts = async () => {
+
+    try {
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/products`
+      );
+
+      const json = await res.json();
+
+      setProducts(json.data.items);
+
+    } catch(error){
+
+      console.log(error);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  fetchProducts();
+
+}, []);
+
+    
+const filtered = useMemo(() => {
+
+  let base = [...products];
+
+
+  if(category !== "Semua"){
+    base = base.filter(
+      p => p.category.name === category
+    );
+  }
+
+
+  if(query){
+
+    base = base.filter(
+      p =>
+      p.name.toLowerCase().includes(query) 
+     
     );
 
-  const filtered = useMemo<Product[]>(() => {
-    const cat = CATEGORY_MAP[category];
-    let base = cat === null ? products : products.filter((p) => p.category === cat);
-    base = base.filter((p) => p.price <= maxPrice);
-    if (selectedMaterials.length) {
-      base = base.filter((p) => selectedMaterials.some((m) => p.materials.includes(m)));
-    }
-    if (query) {
-      base = base.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query) ||
-          p.shortDescription.toLowerCase().includes(query) ||
-          p.collection.toLowerCase().includes(query) ||
-          p.materials.some((m) => m.toLowerCase().includes(query))
-      );
-    }
-    const sorted = [...base];
-    if (sort === "Harga · Terendah") sorted.sort((a, b) => a.price - b.price);
-    if (sort === "Harga · Tertinggi") sorted.sort((a, b) => b.price - a.price);
-    return sorted;
-  }, [category, sort, maxPrice, selectedMaterials, query]);
+  }
+
+
+  if(sort === "Harga · Terendah"){
+    base.sort(
+      (a,b)=>a.minPrice - b.minPrice
+    );
+  }
+
+
+  if(sort === "Harga · Tertinggi"){
+    base.sort(
+      (a,b)=>b.minPrice - a.minPrice
+    );
+  }
+
+
+  return base;
+
+
+},[
+ products,
+ category,
+ query,
+ sort
+]);
 
   return (
     <>
@@ -79,17 +158,17 @@ function ShopPage() {
             <div>
               <div className="eyebrow">— Katalog</div>
               <h1 className="mt-5 font-serif text-5xl leading-[1.02] md:text-7xl">
-                {query ? "Hasil Pencarian" : "Semua Karya"}
+                {query ? "Hasil Pencarian" : "Produk Kami"}
               </h1>
               <p className="mt-5 max-w-xl text-foreground/70">
                 {query
                   ? `Menampilkan karya yang cocok dengan “${qParam}”.`
-                  : "Rangkaian karya yang ringkas dan penuh pertimbangan — bed, kasur, dan perlengkapan lembut yang menyempurnakan sebuah kamar."}
+                  : "Eksplorasi koleksi bed, kasur, dan perlengkapan tidur dengan desain timeless dan material pilihan untuk menciptakan pengalaman istirahat yang istimewa."}
               </p>
             </div>
             <div className="hidden text-right font-serif text-xs tracking-[0.28em] uppercase text-muted-foreground md:block">
               <div className="tabular-nums text-foreground">{String(filtered.length).padStart(2, "0")}</div>
-              <div className="mt-1">karya</div>
+              <div className="mt-1">Produk</div>
             </div>
           </div>
           {query && (
@@ -130,7 +209,7 @@ function ShopPage() {
           {/* Sidebar filters */}
           <aside className="space-y-10">
             <div>
-              <div className="eyebrow">— Saring</div>
+              <div className="eyebrow">— Produk</div>
               <p className="mt-3 text-xs text-muted-foreground">
                 Menampilkan {filtered.length} dari {products.length}
               </p>
@@ -154,28 +233,31 @@ function ShopPage() {
             </div>
 
             <div>
-              <h3 className="font-serif text-lg">Material</h3>
-              <ul className="mt-4 space-y-3 text-sm">
-                {allMaterials.map((m) => (
-                  <li key={m}>
-                    <label className="flex items-center gap-3 cursor-pointer text-foreground/80 hover:text-foreground">
-                      <input
-                        type="checkbox"
-                        checked={selectedMaterials.includes(m)}
-                        onChange={() => toggleMaterial(m)}
-                        className="h-3.5 w-3.5 accent-foreground"
-                      />
-                      {m}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
+  <h3 className="font-serif text-lg">Kategori</h3>
 
-            {(selectedMaterials.length > 0 || maxPrice !== priceMax) && (
+  <ul className="mt-4 space-y-3 text-sm">
+    {categories.map((c) => (
+      <li key={c}>
+        <label className="flex items-center gap-3 cursor-pointer text-foreground/80 hover:text-foreground">
+          <input
+            type="radio"
+            name="category"
+            checked={category === c}
+            onChange={() => setCategory(c)}
+            className="h-3.5 w-3.5 accent-foreground"
+          />
+
+          {c}
+        </label>
+      </li>
+    ))}
+  </ul>
+</div>
+
+            {(maxPrice !== priceMax) && (
               <button
                 onClick={() => {
-                  setSelectedMaterials([]);
+                 
                   setMaxPrice(priceMax);
                 }}
                 className="eyebrow border-b hairline pb-0.5 text-muted-foreground hover:text-foreground"
@@ -230,13 +312,13 @@ function ShopPage() {
             ) : view === "grid" ? (
               <div className="mt-10 grid gap-x-10 gap-y-16 sm:grid-cols-2">
                 {filtered.map((p) => (
-                  <ShopGridCard key={p.id} product={p} />
+                  <ShopGridCard key={p._id} product={p} />
                 ))}
               </div>
             ) : (
               <div className="mt-10 divide-y hairline border-t border-b">
                 {filtered.map((p) => (
-                  <ShopListRow key={p.id} product={p} />
+                  <ShopListRow key={p._id} product={p} />
                 ))}
               </div>
             )}
@@ -245,109 +327,139 @@ function ShopPage() {
 
         <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t hairline pt-10 text-sm text-muted-foreground">
           <span>Menampilkan {filtered.length} dari {products.length}</span>
-          <Link to="/contact" className="text-foreground border-b hairline pb-0.5 hover:border-foreground">
-            Konsultasi dengan penasihat atelier
-          </Link>
         </div>
       </div>
     </>
   );
 }
 
-function Rating({ rating, reviews }: { rating: number; reviews: number }) {
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <Star className="h-3 w-3 fill-foreground text-foreground" />
-      <span className="tabular-nums text-foreground/80">{rating.toFixed(1)}</span>
-      <span>· {reviews} ulasan</span>
-    </div>
-  );
-}
+
 
 function PriceBlock({ product }: { product: Product }) {
+
   return (
     <div className="flex items-baseline gap-2 tabular-nums">
-      <span className="text-sm">Rp{product.price.toLocaleString("id-ID")}</span>
-      {product.originalPrice && (
-        <span className="text-xs text-muted-foreground line-through">
-          Rp{product.originalPrice.toLocaleString("id-ID")}
-        </span>
-      )}
+
+      <span className="text-sm">
+        Rp{product.minPrice.toLocaleString("id-ID")}
+      </span>
+
     </div>
   );
+
 }
 
-function Badges({ product }: { product: Product }) {
-  const discount =
-    product.originalPrice && product.originalPrice > product.price
-      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-      : null;
-  return (
-    <div className="absolute left-4 top-4 flex flex-col gap-1.5">
-      {product.tag && (
-        <span className="eyebrow bg-foreground px-2.5 py-1 text-background">
-          {product.tag}
-        </span>
-      )}
-      {discount !== null && (
-        <span className="eyebrow bg-background/90 px-2.5 py-1 text-foreground backdrop-blur">
-          − {discount}%
-        </span>
-      )}
-    </div>
-  );
-}
+
 
 function ShopGridCard({ product }: { product: Product }) {
+
   return (
-    <Link to="/products/$id" params={{ id: product.id }} className="group block">
+
+    <Link
+  to="/products/$slug"
+  params={{
+    slug: product.slug
+  }}
+      className="group block"
+    >
+
       <div className="relative aspect-[4/5] overflow-hidden bg-surface">
+
         <img
-          src={product.image}
+          src={product.thumbnail}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
+          className="
+          absolute inset-0 
+          h-full 
+          w-full 
+          object-cover 
+          transition-transform 
+          duration-[1400ms]
+          group-hover:scale-[1.03]
+          "
         />
-        <Badges product={product} />
+
       </div>
-      <div className="mt-5 flex items-start justify-between gap-6">
+
+
+      <div className="mt-5 flex justify-between gap-6">
+
         <div>
-          <h3 className="font-serif text-lg leading-tight">{product.name}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{product.shortDescription}</p>
-          <div className="mt-3">
-            <Rating rating={product.rating} reviews={product.reviewCount} />
-          </div>
+
+          <h3 className="font-serif text-lg">
+            {product.name}
+          </h3>
+
+
+         
+
+
         </div>
-        <PriceBlock product={product} />
+
+
+        <div className="text-sm">
+
+          Rp
+          {product.minPrice.toLocaleString("id-ID")}
+
+        </div>
+
+
       </div>
+
+
     </Link>
+
   );
+
 }
 
 function ShopListRow({ product }: { product: Product }) {
-  return (
-    <Link
-      to="/products/$id"
-      params={{ id: product.id }}
-      className="group grid grid-cols-[160px_1fr_auto] items-center gap-8 py-6"
-    >
-      <div className="relative aspect-square overflow-hidden bg-surface">
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
-        />
-      </div>
-      <div>
-        <div className="eyebrow text-muted-foreground">{product.collection}</div>
-        <h3 className="mt-2 font-serif text-xl leading-tight">{product.name}</h3>
-        <p className="mt-2 max-w-lg text-sm text-foreground/70">{product.shortDescription}</p>
-        <div className="mt-3">
-          <Rating rating={product.rating} reviews={product.reviewCount} />
-        </div>
-      </div>
-      <PriceBlock product={product} />
-    </Link>
-  );
+
+return (
+
+<Link
+to="/products/$slug"
+  params={{
+    slug: product.slug
+  }}
+className="
+grid 
+grid-cols-[160px_1fr_auto]
+gap-8
+py-6
+"
+>
+
+
+<img
+src={product.thumbnail}
+className="
+aspect-square
+object-cover
+"
+/>
+
+
+<div>
+
+<h3 className="font-serif text-xl">
+{product.name}
+</h3>
+
+
+
+</div>
+
+
+<div>
+Rp{product.minPrice.toLocaleString("id-ID")}
+</div>
+
+
+</Link>
+
+);
+
 }

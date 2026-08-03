@@ -85,6 +85,8 @@ function OrdersPage() {
   const [selected, setSelected] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (ready && !user) {
@@ -103,17 +105,19 @@ function OrdersPage() {
     } catch {}
   }, []);
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (p = 1) => {
     if (!user) return;
     try {
       setLoading(true);
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/my`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/my?page=${p}&limit=8`, {
         credentials: "include",
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan");
       const list: Order[] = json.data.items ?? [];
       setOrders(list);
+      setTotalPages(json.data.pagination?.totalPages ?? 1);
+      setPage(p);
       if (list.length > 0) {
         await fetchDetail(list[0]._id);
       }
@@ -124,20 +128,18 @@ function OrdersPage() {
     }
   }, [user, fetchDetail]);
 
-  // Fetch saat pertama load
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Refetch saat window difokus lagi (misal balik dari tab lain)
   useEffect(() => {
     const onFocus = () => {
-      fetchOrders();
+      fetchOrders(page);
       if (selected) fetchDetail(selected._id);
     };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, [fetchOrders, fetchDetail, selected]);
+  }, [fetchOrders, fetchDetail, selected, page]);
 
   if (!ready || (ready && !user)) {
     return (
@@ -173,7 +175,7 @@ function OrdersPage() {
             Halo, <span className="text-foreground">{selected?.shippingAddress?.name ?? user?.email}</span>. Berikut adalah pesanan Anda beserta status pengirimannya.
           </p>
           <button
-            onClick={fetchOrders}
+            onClick={() => fetchOrders(page)}
             className="shrink-0 border hairline px-4 py-2 text-[0.72rem] tracking-[0.24em] uppercase hover:border-foreground"
           >
             Perbarui
@@ -227,6 +229,28 @@ function OrdersPage() {
                 );
               })}
             </ul>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t hairline p-4">
+                <button
+                  onClick={() => fetchOrders(page - 1)}
+                  disabled={page === 1}
+                  className="text-[0.72rem] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                >
+                  ← Sebelumnya
+                </button>
+                <span className="text-[0.72rem] text-muted-foreground tabular-nums">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  onClick={() => fetchOrders(page + 1)}
+                  disabled={page === totalPages}
+                  className="text-[0.72rem] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                >
+                  Selanjutnya →
+                </button>
+              </div>
+            )}
           </aside>
 
           {selected && (

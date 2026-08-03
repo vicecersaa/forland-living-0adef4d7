@@ -363,7 +363,7 @@ function ShopGridCard({ product }: { product: Product }) {
       className="group block"
     >
 
-      <div className="relative aspect-[4/5] overflow-hidden bg-surface">
+      <div className="relative aspect-[5/5] overflow-hidden bg-surface">
 
         <img
           src={product.thumbnail}

@@ -1,14 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, Search, ShoppingBag, X, Package, LogIn, LogOut } from "lucide-react";
+import { Menu, Search, ShoppingBag, X, Package, LogIn, LogOut, ShieldCheck } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { SearchOverlay } from "./search-overlay";
+
 
 const links = [
   { to: "/shop", label: "Belanja" },
   { to: "/shop", label: "Bed" },
   { to: "/shop", label: "Kasur" },
+  { to: "/warranty", label: "Garansi" }, // <- tambah ini
   { to: "/journal", label: "Jurnal" },
   { to: "/about", label: "Tentang" },
   { to: "/contact", label: "Kontak" },
@@ -92,6 +94,16 @@ export function SiteNav() {
           )}
           {user ? (
             <>
+              <Link
+              to="/warranty"
+              aria-label="Garansi"
+              className="group inline-flex items-center gap-2 rounded-full px-2.5 py-2 text-[0.7rem] tracking-[0.2em] uppercase opacity-85 transition-opacity duration-500 hover:opacity-100 sm:gap-2.5 sm:px-3.5"
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.4} />
+              <span className="hidden sm:inline leading-none">
+                Garansi
+              </span>
+            </Link>
               <Link
                 to="/orders"
                 aria-label="Pesanan Saya"

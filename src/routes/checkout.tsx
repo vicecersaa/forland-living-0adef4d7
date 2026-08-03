@@ -30,6 +30,11 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [coupon, setCoupon] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponMessage, setCouponMessage] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -41,12 +46,63 @@ function CheckoutPage() {
     notes: "",
   });
 
-  const tax = Math.round(subtotal * 0.11);
-  const total = subtotal + tax;
+  const discountedSubtotal = subtotal - discount;
+
+const tax = Math.round(discountedSubtotal * 0.11);
+
+const total = discountedSubtotal + tax;
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
+
+  async function applyCoupon() {
+
+  if (!coupon.trim()) return;
+
+  setCouponLoading(true);
+  setCouponMessage("");
+
+  try {
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/coupons/validate`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: coupon,
+        subtotal,
+      }),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      throw new Error(json.message);
+    }
+
+    setDiscount(json.data.discount);
+    setCouponMessage("Voucher berhasil digunakan");
+
+  } catch (err) {
+
+    setDiscount(0);
+
+    setCouponMessage(
+      err instanceof Error
+        ? err.message
+        : "Voucher tidak valid"
+    );
+
+  } finally {
+
+    setCouponLoading(false);
+
+  }
+
+}
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,17 +116,24 @@ function CheckoutPage() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          shippingAddress: {
-            name: form.name,
-            phone: form.phone,
-            province: form.province,
-            city: form.city,
-            district: form.district,
-            postalCode: form.postalCode,
-            address: form.address,
-          },
-          notes: form.notes,
-        }),
+
+  shippingAddress: {
+
+    name: form.name,
+    phone: form.phone,
+    province: form.province,
+    city: form.city,
+    district: form.district,
+    postalCode: form.postalCode,
+    address: form.address,
+
+  },
+
+  notes: form.notes,
+
+  coupon,
+
+}),
       });
 
       const checkoutJson = await checkoutRes.json();
@@ -168,6 +231,73 @@ function CheckoutPage() {
         <aside className="lg:sticky lg:top-32 lg:self-start">
           <div className="border hairline p-8">
             <div className="eyebrow">Pesanan</div>
+            <div className="mt-8 border-t hairline pt-6">
+
+  <div className="eyebrow mb-4">
+    Kode Voucher
+  </div>
+
+  <div className="flex gap-3">
+
+    <input
+      value={coupon}
+      onChange={(e) => setCoupon(e.target.value.toUpperCase())}
+      placeholder="Masukkan kode voucher"
+      className="flex-1 border hairline bg-transparent px-4 py-3 text-sm outline-none transition-colors focus:border-foreground"
+    />
+
+    <button
+      type="button"
+      onClick={applyCoupon}
+      disabled={couponLoading}
+      className="min-w-[120px] bg-foreground px-5 py-3 text-xs uppercase tracking-[0.2em] text-background transition hover:opacity-90 disabled:opacity-50"
+    >
+      {couponLoading ? "..." : "Gunakan"}
+    </button>
+
+  </div>
+
+  {couponMessage && (
+
+    <div
+      className={`mt-4 rounded-md border p-4 ${
+        discount > 0
+          ? "border-green-300 bg-green-50 text-green-700"
+          : "border-red-300 bg-red-50 text-red-700"
+      }`}
+    >
+
+      <div className="font-medium">
+
+        {discount > 0
+          ? "✓ Voucher berhasil digunakan"
+          : couponMessage}
+
+      </div>
+
+      {discount > 0 && (
+
+        <div className="mt-1 text-sm">
+
+          Potongan sebesar{" "}
+
+          <strong>
+
+            Rp{discount.toLocaleString("id-ID")}
+
+          </strong>{" "}
+
+          telah diterapkan.
+
+        </div>
+
+      )}
+
+    </div>
+
+  )}
+
+</div>
             <ul className="mt-6 space-y-5">
               {resolved.map((item) => (
                 <li key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
@@ -204,6 +334,17 @@ function CheckoutPage() {
                 <dt className="text-muted-foreground">Pengiriman</dt>
                 <dd>Gratis</dd>
               </div>
+              <div className="flex justify-between text-green-600">
+
+  <dt>Diskon Voucher</dt>
+
+  <dd className="font-medium tabular-nums">
+
+    -Rp{discount.toLocaleString("id-ID")}
+
+  </dd>
+
+</div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Estimasi PPN 11%</dt>
                 <dd className="tabular-nums">Rp{tax.toLocaleString("id-ID")}</dd>

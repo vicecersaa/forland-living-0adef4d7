@@ -43,6 +43,10 @@ export const Route = createFileRoute("/products/$slug")({
   component: ProductPage,
 });
 
+
+
+
+
 function ProductPage() {
   const { product } = Route.useLoaderData();
   const variants = product.variants ?? [];
@@ -50,6 +54,9 @@ function ProductPage() {
   const [selectedVariant, setSelectedVariant] = useState(variants[0]?.name ?? "");
   const activeVariant = variants.find((v: Variant) => v.name === selectedVariant);
   const sizes = activeVariant?.sizes ?? [];
+
+  const [expanded, setExpanded] = useState(false);
+
 
   const [selectedSize, setSelectedSize] = useState(sizes[0]?.name ?? "");
   const [qty, setQty] = useState(1);
@@ -125,7 +132,7 @@ function ProductPage() {
                     </div>
                   </div>
                 ) : (
-                      <img src={item.src} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      <img src={item.src} alt="" className="h-full w-full object-cover" loading="lazy" style={{ imageRendering: "auto" }} />
                     )}
                   </button>
                 ))}
@@ -134,7 +141,7 @@ function ProductPage() {
 
             {/* Main media */}
             <div className="flex-1 min-w-0 space-y-3">
-              <div className="relative aspect-[4/5] overflow-hidden bg-surface">
+              <div className="relative aspect-[5/5] overflow-hidden bg-surface">
                 {mediaItems[activeImage]?.type === "video" ? (
                   <video
                     src={mediaItems[activeImage].src}
@@ -146,6 +153,7 @@ function ProductPage() {
                     src={mediaItems[activeImage]?.src ?? ""}
                     alt={product.name}
                     className="h-full w-full object-cover transition-opacity duration-300"
+                    style={{ imageRendering: "auto" }}
                   />
                 )}
                 {mediaItems.length > 1 && (
@@ -187,7 +195,7 @@ function ProductPage() {
                           </svg>
                         </div>
                       ) : (
-                        <img src={item.src} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        <img src={item.src} alt="" className="h-full w-full object-cover" loading="lazy" style={{ imageRendering: "auto" }}/>
                       )}
                     </button>
                   ))}
@@ -203,47 +211,86 @@ function ProductPage() {
             <div className="mt-6 text-lg tabular-nums">
               Rp{currentPrice.toLocaleString("id-ID")}
             </div>
-            <p className="mt-8 text-[0.98rem] leading-[1.85] text-foreground/80 break-words">
-              {product.description}
-            </p>
+           <div className="mt-8">
+  <dl className="divide-y hairline border-t border-b hairline">
+    {product.description?.split("\n").filter(Boolean).slice(0, expanded ? undefined : 6).map((line, i) => {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx > 0 && colonIdx < 45) {
+        return (
+          <div key={i} className="flex justify-between gap-6 py-3">
+            <dt className="text-[0.82rem] text-muted-foreground shrink-0">{line.slice(0, colonIdx).trim()}</dt>
+            <dd className="text-[0.82rem] text-right">{line.slice(colonIdx + 1).trim()}</dd>
+          </div>
+        );
+      }
+      return <p key={i} className="py-2 text-[0.98rem] leading-[1.85] text-foreground/80">{line}</p>;
+    })}
+  </dl>
+  {(product.description?.split("\n").filter(Boolean).length ?? 0) > 6 && (
+    <button
+      onClick={() => setExpanded(!expanded)}
+      className="mt-3 text-[0.78rem] tracking-[0.2em] uppercase border-b hairline pb-0.5 hover:border-foreground transition-colors"
+    >
+      {expanded ? "Sembunyikan" : "Lihat Selengkapnya"}
+    </button>
+  )}
+</div>
 
             {variants.length > 0 && (
-              <div className="mt-10">
-                <div className="mb-4 flex items-baseline justify-between">
-                  <div className="eyebrow">Varian</div>
-                  <div className="text-xs text-muted-foreground truncate max-w-[60%] text-right">{selectedVariant}</div>
-                </div>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {variants.map((v: Variant) => {
-                    const active = selectedVariant === v.name;
-                    return (
-                      <button
-                        key={v.name}
-                        onClick={() => setSelectedVariant(v.name)}
-                        className={
-                          "group flex flex-col overflow-hidden border text-left transition-all " +
-                          (active
-                            ? "border-foreground shadow-[0_0_0_1px_hsl(var(--foreground))]"
-                            : "hairline hover:border-foreground/60")
-                        }
-                      >
-                        {v.thumbnail && (
-                          <div className="aspect-square w-full bg-surface">
-                            <img src={v.thumbnail} alt={v.name} className="h-full w-full object-cover" loading="lazy" />
-                          </div>
-                        )}
-                        <div className="px-2 py-2">
-                          <div className="truncate text-[0.72rem] font-medium tracking-wide">{v.name}</div>
-                          {v.sku && (
-                            <div className="mt-0.5 truncate text-[0.65rem] text-muted-foreground">{v.sku}</div>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+  <div className="mt-10">
+    <div className="mb-4 flex items-baseline justify-between">
+      <div className="eyebrow">Varian</div>
+      <div className="text-xs text-muted-foreground truncate max-w-[60%] text-right">{selectedVariant}</div>
+    </div>
+    <div className={variants.some(v => v.thumbnail) ? "grid grid-cols-2 gap-2 sm:grid-cols-4" : "flex flex-wrap gap-2"}>
+      {variants.map((v: Variant) => {
+        const active = selectedVariant === v.name;
+        return v.thumbnail ? (
+          // Ada thumbnail — card style
+          <button
+            key={v.name}
+            onClick={() => setSelectedVariant(v.name)}
+            className={
+              "group flex flex-col overflow-hidden border text-left transition-all " +
+              (active
+                ? "border-foreground shadow-[0_0_0_1px_hsl(var(--foreground))]"
+                : "hairline hover:border-foreground/60")
+            }
+          >
+            <div className="aspect-square w-full bg-surface">
+              <img src={v.thumbnail} alt={v.name} className="h-full w-full object-cover" loading="lazy" style={{ imageRendering: "auto" }} />
+            </div>
+            <div className="px-2 py-2">
+              <div className="truncate text-[0.72rem] font-medium tracking-wide">{v.name}</div>
+              {v.sku && (
+                <div className="mt-0.5 truncate text-[0.65rem] text-muted-foreground">{v.sku}</div>
+              )}
+            </div>
+          </button>
+        ) : (
+          // Tidak ada thumbnail — pill style
+          <button
+            key={v.name}
+            onClick={() => setSelectedVariant(v.name)}
+            className={
+              "border px-5 py-3 text-left transition-all text-sm " +
+              (active
+                ? "border-foreground bg-foreground text-background"
+                : "hairline hover:border-foreground text-foreground")
+            }
+          >
+            <div className="font-medium">{v.name}</div>
+            {v.sku && (
+              <div className={"mt-0.5 text-[0.65rem] tracking-wide " + (active ? "text-background/70" : "text-muted-foreground")}>
+                {v.sku}
               </div>
             )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
 
             {sizes.length > 0 && (
               <div className="mt-8">
@@ -296,9 +343,7 @@ function ProductPage() {
                 Tambah ke Keranjang
               </button>
             </div>
-            <button className="mt-3 w-full border hairline py-4 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground">
-              Bayar Sekarang
-            </button>
+            
 
             <dl className="mt-10 space-y-4 border-t hairline pt-8 text-sm">
               <div className="flex justify-between gap-6">

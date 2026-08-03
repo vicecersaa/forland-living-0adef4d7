@@ -87,11 +87,11 @@ function CartPage() {
                       </button>
                     </div>
                     <button
-                      onClick={() => remove(i)}
-                      className="inline-flex items-center gap-1 text-[0.72rem] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" /> Hapus
-                    </button>
+  onClick={() => remove(i)}
+  className="inline-flex items-center gap-1 border border-red-300 px-3 py-1.5 text-[0.72rem] tracking-[0.2em] uppercase text-red-400 hover:border-red-500 hover:text-red-600 transition-colors"
+>
+  <X className="h-3 w-3" /> Hapus
+</button>
                   </div>
                 </div>
 

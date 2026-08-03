@@ -20,6 +20,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
@@ -82,6 +83,11 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WarrantyRoute = WarrantyRouteImport.update({
+  id: '/warranty',
+  path: '/warranty',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/journal': typeof JournalRoute
   '/orders': typeof OrdersRoute
   '/shop': typeof ShopRoute
+  '/warranty': typeof WarrantyRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/products/$slug': typeof ProductsSlugRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/journal': typeof JournalRoute
   '/orders': typeof OrdersRoute
   '/shop': typeof ShopRoute
+  '/warranty': typeof WarrantyRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/products/$slug': typeof ProductsSlugRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/journal': typeof JournalRoute
   '/orders': typeof OrdersRoute
   '/shop': typeof ShopRoute
+  '/warranty': typeof WarrantyRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/products/$slug': typeof ProductsSlugRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/journal'
     | '/orders'
     | '/shop'
+    | '/warranty'
     | '/admin/orders'
     | '/admin/products'
     | '/products/$slug'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/journal'
     | '/orders'
     | '/shop'
+    | '/warranty'
     | '/admin/orders'
     | '/admin/products'
     | '/products/$slug'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/journal'
     | '/orders'
     | '/shop'
+    | '/warranty'
     | '/admin/orders'
     | '/admin/products'
     | '/products/$slug'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   JournalRoute: typeof JournalRoute
   OrdersRoute: typeof OrdersRoute
   ShopRoute: typeof ShopRoute
+  WarrantyRoute: typeof WarrantyRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ResetPasswordTokenRoute: typeof ResetPasswordTokenRoute
 }
@@ -322,6 +335,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/warranty': {
+      id: '/warranty'
+      path: '/warranty'
+      fullPath: '/warranty'
+      preLoaderRoute: typeof WarrantyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   JournalRoute: JournalRoute,
   OrdersRoute: OrdersRoute,
   ShopRoute: ShopRoute,
+  WarrantyRoute: WarrantyRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ResetPasswordTokenRoute: ResetPasswordTokenRoute,
 }

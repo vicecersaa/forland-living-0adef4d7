@@ -45,55 +45,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ready,
 
       async login(email, password) {
-        await api<{
-          data: {
-            user: AuthUser;
-          };
-        }>("/auth/login", {
-          method: "POST",
-          credentials: "include",
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        });
+  await api<{ data: { user: AuthUser } }>("/auth/login", {
+    method: "POST",
+    credentials: "include",
+    body: JSON.stringify({ email, password }),
+  });
 
-        const me = await api<{
-          data: AuthUser;
-        }>("/auth/me", {
-          credentials: "include",
-        });
+  await new Promise((resolve) => setTimeout(resolve, 100)); // ← tambah ini
 
-        setUser(me.data);
+  const me = await api<{ data: AuthUser }>("/auth/me", {
+    credentials: "include",
+  });
 
-        return me.data;
-      },
+  setUser(me.data);
+  return me.data;
+},
 
-      async register(name, email, password) {
-        await api<{
-          data: {
-            user: AuthUser;
-          };
-        }>("/auth/register", {
-          method: "POST",
-          credentials: "include",
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-          }),
-        });
+async register(name, email, password) {
+  await api<{ data: { user: AuthUser } }>("/auth/register", {
+    method: "POST",
+    credentials: "include",
+    body: JSON.stringify({ name, email, password }),
+  });
 
-        const me = await api<{
-          data: AuthUser;
-        }>("/auth/me", {
-          credentials: "include",
-        });
+  await new Promise((resolve) => setTimeout(resolve, 100)); // ← tambah ini
 
-        setUser(me.data);
+  const me = await api<{ data: AuthUser }>("/auth/me", {
+    credentials: "include",
+  });
 
-        return me.data;
-      },
+  setUser(me.data);
+  return me.data;
+},
 
       async logout() {
         try {

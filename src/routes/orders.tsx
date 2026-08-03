@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { CheckCircle2, Clock3, Package, Truck, XCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
@@ -92,34 +92,7 @@ function OrdersPage() {
     }
   }, [ready, user, navigate]);
 
-  useEffect(() => {
-    if (!user) return;
-    const fetchOrders = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/my`, {
-          credentials: "include",
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan");
-        const list: Order[] = json.data.items ?? [];
-        setOrders(list);
-        if (list.length > 0) {
-          const detailRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/my/${list[0]._id}`, {
-            credentials: "include",
-          });
-          const detailJson = await detailRes.json();
-          if (detailRes.ok) setSelected(detailJson.data);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, [user]);
-
-  const fetchDetail = async (id: string) => {
+  const fetchDetail = useCallback(async (id: string) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/my/${id}`, {
         credentials: "include",
@@ -128,7 +101,43 @@ function OrdersPage() {
       if (!res.ok) throw new Error(json.message);
       setSelected(json.data);
     } catch {}
-  };
+  }, []);
+
+  const fetchOrders = useCallback(async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/my`, {
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan");
+      const list: Order[] = json.data.items ?? [];
+      setOrders(list);
+      if (list.length > 0) {
+        await fetchDetail(list[0]._id);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setLoading(false);
+    }
+  }, [user, fetchDetail]);
+
+  // Fetch saat pertama load
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // Refetch saat window difokus lagi (misal balik dari tab lain)
+  useEffect(() => {
+    const onFocus = () => {
+      fetchOrders();
+      if (selected) fetchDetail(selected._id);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [fetchOrders, fetchDetail, selected]);
 
   if (!ready || (ready && !user)) {
     return (
@@ -159,9 +168,17 @@ function OrdersPage() {
       <div className="max-w-2xl">
         <div className="eyebrow">Akun · Pesanan</div>
         <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-5xl md:text-6xl">Pesanan Saya</h1>
-        <p className="mt-6 text-[0.98rem] leading-[1.85] text-foreground/70">
-          Halo, <span className="text-foreground">{selected?.shippingAddress?.name ?? user?.email}</span>. Berikut adalah pesanan Anda beserta status pengirimannya.
-        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-[0.98rem] leading-[1.85] text-foreground/70">
+            Halo, <span className="text-foreground">{selected?.shippingAddress?.name ?? user?.email}</span>. Berikut adalah pesanan Anda beserta status pengirimannya.
+          </p>
+          <button
+            onClick={fetchOrders}
+            className="shrink-0 border hairline px-4 py-2 text-[0.72rem] tracking-[0.24em] uppercase hover:border-foreground"
+          >
+            Perbarui
+          </button>
+        </div>
       </div>
 
       {orders.length === 0 ? (

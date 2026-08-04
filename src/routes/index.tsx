@@ -330,7 +330,7 @@ function Categories({ hp }: { hp: HomepageData | null }) {
   const col = hp?.collection;
 
   return (
-    <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:py-0">
+    <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:pb-0 lg:pt-32">
       <div className="mb-12">
         <div className="eyebrow">
           {col?.label || "Koleksi"}

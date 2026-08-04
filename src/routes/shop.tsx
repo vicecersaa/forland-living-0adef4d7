@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import type { Product } from "@/lib/types";
 import { LayoutGrid, Rows3, Search, X } from "lucide-react";
+import { SmartImage } from "@/components/SmartImage";
 
 export const Route = createFileRoute("/shop")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -73,7 +74,12 @@ function ShopPage() {
     }
 
     if (query) {
-      base = base.filter((p) => p.name.toLowerCase().includes(query));
+      base = base.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.category.name.toLowerCase().includes(query) ||
+          p.category.slug?.toLowerCase().includes(query)
+      );
     }
 
     if (maxPrice > 0 && maxPrice < priceMax) {
@@ -99,7 +105,7 @@ function ShopPage() {
             <div>
               <div className="eyebrow">— Katalog</div>
               <h1 className="mt-5 font-serif text-5xl leading-[1.02] md:text-7xl">
-                {query ? "Hasil Pencarian" : "Produk Kami"}
+                Produk Kami
               </h1>
               <p className="mt-5 max-w-xl text-foreground/70">
                 {query
@@ -129,7 +135,6 @@ function ShopPage() {
       </header>
 
       <div className="mx-auto max-w-[1600px] px-6 py-10 lg:px-12">
-        {/* Category tabs */}
         <div className="flex flex-wrap gap-x-8 gap-y-3 border-b hairline pb-6 text-[0.78rem] tracking-[0.2em] uppercase">
           {categories.map((c) => (
             <button
@@ -147,7 +152,6 @@ function ShopPage() {
           ))}
         </div>
 
-        {/* Mobile filter toggle */}
         <div className="mt-6 flex items-center justify-between lg:hidden">
           <button
             onClick={() => setFilterOpen((v) => !v)}
@@ -161,7 +165,6 @@ function ShopPage() {
         </div>
 
         <div className="mt-6 grid gap-10 lg:mt-10 lg:grid-cols-[220px_1fr] lg:gap-16">
-          {/* Sidebar filters — desktop selalu tampil, mobile toggle */}
           <aside className={`space-y-10 ${filterOpen ? "block" : "hidden"} lg:block`}>
             <div>
               <div className="eyebrow">— Produk</div>
@@ -217,7 +220,6 @@ function ShopPage() {
             )}
           </aside>
 
-          {/* Main */}
           <section className="min-w-0">
             <div className="flex items-center justify-between border-b hairline pb-4">
               <div className="flex items-center gap-1">
@@ -291,14 +293,13 @@ function ShopGridCard({ product }: { product: Product }) {
       className="group block min-w-0"
     >
       <div className="relative aspect-[5/5] overflow-hidden bg-surface">
-        <img
+        <SmartImage
           src={product.thumbnail}
           alt={product.name}
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] group-hover:scale-[1.03]"
         />
       </div>
-
       <div className="mt-5 flex items-start justify-between gap-4">
         <h3 className="min-w-0 flex-1 break-words font-serif text-lg leading-snug">
           {product.name}
@@ -318,16 +319,16 @@ function ShopListRow({ product }: { product: Product }) {
       params={{ slug: product.slug }}
       className="grid grid-cols-[80px_1fr_auto] items-center gap-6 py-6 sm:grid-cols-[160px_1fr_auto] sm:gap-8"
     >
-      <img
-        src={product.thumbnail}
-        alt={product.name}
-        className="aspect-square w-full object-cover"
-      />
-
+      <div className="relative aspect-square w-full overflow-hidden">
+        <SmartImage
+          src={product.thumbnail}
+          alt={product.name}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
       <div className="min-w-0">
         <h3 className="break-words font-serif text-lg sm:text-xl">{product.name}</h3>
       </div>
-
       <div className="shrink-0 text-sm tabular-nums">
         Rp{product.minPrice.toLocaleString("id-ID")}
       </div>

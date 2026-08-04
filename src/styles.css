@@ -155,4 +155,22 @@
   animation: fl-fade-in 2s ease-out both;
 }
 
+.forland-toast {
+  background: var(--secondary) !important;
+  border: 1px solid var(--hairline) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 16px 20px !important;
+}
 
+.forland-toast-title {
+  color: var(--foreground) !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+}
+
+.forland-toast-description {
+  color: color-mix(in oklch, var(--foreground) 60%, transparent) !important;
+  font-size: 0.72rem !important;
+}

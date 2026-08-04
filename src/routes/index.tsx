@@ -9,17 +9,12 @@ import gallery1 from "@/assets/gallery-1.jpg";
 import gallery2 from "@/assets/gallery-2.jpg";
 import bed2 from "@/assets/product-bed-2.jpg";
 import { useEffect, useState } from "react";
-import { ProductCard } from "@/components/product-card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import { SmartImage } from "@/components/SmartImage";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
-
-// =====================
-// Types
-// =====================
 
 type HomepageData = {
   hero: {
@@ -102,29 +97,18 @@ type HomepageData = {
   };
 };
 
-// =====================
-// Hook: fetch homepage sekali, semua section pakai
-// =====================
-
 function useHomepage() {
   const [data, setData] = useState<HomepageData | null>(null);
-
   useEffect(() => {
     api<{ data: HomepageData }>("/homepage")
       .then((res) => setData(res.data))
       .catch(console.error);
   }, []);
-
   return data;
 }
 
-// =====================
-// Root
-// =====================
-
 function Index() {
   const hp = useHomepage();
-
   return (
     <>
       <Hero hp={hp} />
@@ -140,20 +124,16 @@ function Index() {
   );
 }
 
-// =====================
-// Hero
-// =====================
-
 function Hero({ hp }: { hp: HomepageData | null }) {
   const hero = hp?.hero;
-
   return (
     <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden bg-foreground text-background">
-      <img
+      <SmartImage
         src={hero?.image || heroImg}
         alt="A quiet bedroom in soft morning light with linen bedding"
         width={1920}
         height={1280}
+        loading="eager"
         className="absolute inset-0 h-full w-full object-cover fade-in-slow"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/50" />
@@ -199,16 +179,12 @@ function Hero({ hp }: { hp: HomepageData | null }) {
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 mx-auto flex max-w-[1600px] items-end justify-between px-6 text-[0.65rem] tracking-[0.3em] uppercase text-background/60 lg:px-12">
-        <span>{hero?.smallText || "Est. 2014 — Oslo"}</span>
+        <span>{hero?.smallText || "Est. 2014 — Bogor, Indonesia"}</span>
         <span>N° 01 / 04</span>
       </div>
     </section>
   );
 }
-
-// =====================
-// PromoBanner — endpoint /banners sendiri, tidak diubah
-// =====================
 
 function PromoBanner() {
   type Banner = {
@@ -249,17 +225,17 @@ function PromoBanner() {
           style={{ transform: `translateX(-${current * 100}%)` }}
         >
           {slides.map((banner) => (
-            <div key={banner._id} className="min-w-full">
+            <div key={banner._id} className="relative min-w-full">
               {banner.link ? (
                 <a href={banner.link} target="_self">
-                  <img
+                  <SmartImage
                     src={banner.image}
                     alt=""
                     className="h-[260px] w-full object-cover md:h-[360px] lg:h-[360px]"
                   />
                 </a>
               ) : (
-                <img
+                <SmartImage
                   src={banner.image}
                   alt=""
                   className="h-[260px] w-full object-cover md:h-[360px] lg:h-[360px]"
@@ -268,7 +244,6 @@ function PromoBanner() {
             </div>
           ))}
         </div>
-
         {slides.length > 1 && (
           <>
             <button
@@ -303,11 +278,6 @@ function PromoBanner() {
   );
 }
 
-// =====================
-// Categories — endpoint /categories sendiri, tidak diubah
-// Heading section diambil dari hp.collection.label & hp.collection.title
-// =====================
-
 function Categories({ hp }: { hp: HomepageData | null }) {
   type Category = {
     _id: string;
@@ -332,14 +302,11 @@ function Categories({ hp }: { hp: HomepageData | null }) {
   return (
     <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:pb-0 lg:pt-32">
       <div className="mb-12">
-        <div className="eyebrow">
-          {col?.label || "Koleksi"}
-        </div>
+        <div className="eyebrow">{col?.label || "Koleksi"}</div>
         <h2 className="mt-4 font-serif text-4xl md:text-5xl">
           {col?.title || "Temukan ruang istirahat Anda."}
         </h2>
       </div>
-
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {categories.map((category) => (
           <Link
@@ -348,11 +315,11 @@ function Categories({ hp }: { hp: HomepageData | null }) {
             search={{ q: category.slug }}
             className="group block"
           >
-            <div className="aspect-[3/4] overflow-hidden bg-surface">
-              <img
+            <div className="relative aspect-[3/4] overflow-hidden bg-surface">
+              <SmartImage
                 src={category.image}
                 alt={category.name}
-                className="h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.04]"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.04]"
               />
             </div>
             <div className="mt-6">
@@ -366,13 +333,8 @@ function Categories({ hp }: { hp: HomepageData | null }) {
   );
 }
 
-// =====================
-// Philosophy
-// =====================
-
 function Philosophy({ hp }: { hp: HomepageData | null }) {
   const p = hp?.philosophy;
-
   return (
     <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12 lg:py-32">
       <div className="grid gap-10 md:grid-cols-12 md:gap-24">
@@ -383,14 +345,15 @@ function Philosophy({ hp }: { hp: HomepageData | null }) {
           </h2>
         </div>
         <div className="md:col-span-6 md:col-start-7">
-          <img
-            src={p?.image || philosophyImg}
-            alt="An arched window casting soft light across a linen-dressed bed"
-            loading="lazy"
-            width={1600}
-            height={1104}
-            className="aspect-[4/3] w-full object-cover"
-          />
+          <div className="relative aspect-[4/3] w-full overflow-hidden">
+            <SmartImage
+              src={p?.image || philosophyImg}
+              alt="An arched window casting soft light across a linen-dressed bed"
+              width={1600}
+              height={1104}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
           <div className="mt-10 space-y-6 text-[0.98rem] leading-[1.85] text-foreground/80 md:max-w-xl">
             <p>
               {p?.paragraph1 ||
@@ -407,16 +370,12 @@ function Philosophy({ hp }: { hp: HomepageData | null }) {
   );
 }
 
-// =====================
-// Craftsmanship
-// =====================
-
 function Craftsmanship({ hp }: { hp: HomepageData | null }) {
   const c = hp?.craftsmanship;
 
   const defaultPillars = [
     { number: "01", title: "Material Jujur", description: "Flax Eropa, latex alami, oak kering oven, dan wool murni." },
-    { number: "02", title: "Tangan Lokal", description: "Setiap rangka dan kasur dirakit oleh tim kecil di Oslo." },
+    { number: "02", title: "Tangan Lokal", description: "Setiap rangka dan kasur dirakit oleh tim kecil di Bogor." },
     { number: "03", title: "Kenyamanan Terukur", description: "Lima belas lapis presisi, dipetakan sesuai lekuk tubuh." },
     { number: "04", title: "Dirancang untuk Berumur", description: "Sambungan yang dapat diperbaiki. Garansi struktural 25 tahun." },
   ];
@@ -445,14 +404,13 @@ function Craftsmanship({ hp }: { hp: HomepageData | null }) {
             ))}
           </div>
         </div>
-        <div className="order-1 lg:order-2">
-          <img
+        <div className="relative order-1 lg:order-2 aspect-[4/5] w-full overflow-hidden">
+          <SmartImage
             src={c?.image || craftImg}
             alt="A craftsman hand-stitching a premium mattress"
-            loading="lazy"
             width={1600}
             height={1200}
-            className="aspect-[4/5] w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
       </div>
@@ -460,21 +418,15 @@ function Craftsmanship({ hp }: { hp: HomepageData | null }) {
   );
 }
 
-// =====================
-// Material Story
-// =====================
-
 function MaterialStory({ hp }: { hp: HomepageData | null }) {
   const m = hp?.materialStudy;
-
   return (
     <section className="border-y hairline bg-surface">
       <div className="mx-auto grid max-w-[1600px] gap-0 lg:grid-cols-2">
         <div className="relative aspect-[4/5] w-full lg:aspect-auto">
-          <img
+          <SmartImage
             src={m?.image || materialImg}
             alt="A macro study of woven linen fabric"
-            loading="lazy"
             className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
@@ -501,13 +453,8 @@ function MaterialStory({ hp }: { hp: HomepageData | null }) {
   );
 }
 
-// =====================
-// Gallery
-// =====================
-
 function Gallery({ hp }: { hp: HomepageData | null }) {
   const g = hp?.gallery;
-
   const defaultImages = [gallery1, philosophyImg, gallery2, bed2];
   const images = g?.images?.filter(Boolean).length ? g.images : defaultImages;
 
@@ -521,32 +468,36 @@ function Gallery({ hp }: { hp: HomepageData | null }) {
           </h2>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-12 md:gap-8">
-          <img
-            src={images[0]}
-            alt="A serene minimalist bedroom"
-            loading="lazy"
-            className="aspect-[4/5] w-full object-cover md:col-span-5"
-          />
-          <div className="grid gap-6 md:col-span-7 md:gap-8">
-            <img
-              src={images[1]}
-              alt="A bedroom with an arched window"
-              loading="lazy"
-              className="aspect-[16/9] w-full object-cover"
+          <div className="relative aspect-[4/5] w-full overflow-hidden md:col-span-5">
+            <SmartImage
+              src={images[0]}
+              alt="A serene minimalist bedroom"
+              className="absolute inset-0 h-full w-full object-cover"
             />
+          </div>
+          <div className="grid gap-6 md:col-span-7 md:gap-8">
+            <div className="relative aspect-[16/9] w-full overflow-hidden">
+              <SmartImage
+                src={images[1]}
+                alt="A bedroom with an arched window"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-6 md:gap-8">
-              <img
-                src={images[2]}
-                alt="A stack of soft linen pillows"
-                loading="lazy"
-                className="aspect-square w-full object-cover"
-              />
-              <img
-                src={images[3]}
-                alt="A low oak bed in a japandi bedroom"
-                loading="lazy"
-                className="aspect-square w-full object-cover"
-              />
+              <div className="relative aspect-square w-full overflow-hidden">
+                <SmartImage
+                  src={images[2]}
+                  alt="A stack of soft linen pillows"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
+              <div className="relative aspect-square w-full overflow-hidden">
+                <SmartImage
+                  src={images[3]}
+                  alt="A low oak bed in a japandi bedroom"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -554,10 +505,6 @@ function Gallery({ hp }: { hp: HomepageData | null }) {
     </section>
   );
 }
-
-// =====================
-// Reviews
-// =====================
 
 function Reviews({ hp }: { hp: HomepageData | null }) {
   const t = hp?.testimonials;
@@ -608,13 +555,8 @@ function Reviews({ hp }: { hp: HomepageData | null }) {
   );
 }
 
-// =====================
-// Newsletter
-// =====================
-
 function Newsletter({ hp }: { hp: HomepageData | null }) {
   const n = hp?.newsletter;
-
   return (
     <section className="border-t hairline bg-foreground text-background">
       <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-14 text-center lg:py-32">

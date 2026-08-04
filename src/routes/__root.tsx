@@ -168,7 +168,7 @@ const isAuth = authRoutes.some((route) =>
           )}
           {!isAdmin && !isAuth && <CookieConsent />}
           <Toaster
-            position="top-center"
+            position="top-right"
             richColors={false}
             closeButton={false}
             expand={false}

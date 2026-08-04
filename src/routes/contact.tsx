@@ -3,69 +3,84 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — Forland Living" },
-      { name: "description", content: "Reach the atelier. Book a private showroom appointment, ask about lead times, or request a material sample." },
-      { property: "og:title", content: "Contact — Forland Living" },
-      { property: "og:description", content: "Reach the atelier. Book a showroom appointment or request a material sample." },
+      { title: "Hubungi Kami — Forland Living" },
+      { name: "description", content: "Hubungi atelier kami. Buat janji kunjungan showroom, tanya soal waktu pengerjaan, atau minta sampel material." },
+      { property: "og:title", content: "Hubungi Kami — Forland Living" },
+      { property: "og:description", content: "Hubungi atelier kami. Buat janji kunjungan showroom atau minta sampel material." },
     ],
   }),
   component: ContactPage,
 });
 
+const WA_NUMBER = "6285174271344"; 
+
 function ContactPage() {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const nama = (form.elements.namedItem("nama") as HTMLInputElement).value.trim();
+    const pesan = (form.elements.namedItem("pesan") as HTMLTextAreaElement).value.trim();
+
+    const teks = `Halo Forland Living! 👋\n\nNama saya *${nama}*.\n\n${pesan}`;
+    const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(teks)}`;
+
+    window.open(url, "_blank");
+  }
+
   return (
     <section className="mx-auto max-w-[1400px] px-6 pt-24 pb-16 lg:px-12 lg:pt-56">
       <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-24">
         <div>
-          <div className="eyebrow">Correspondence</div>
-          <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-6xl">Write to the house.</h1>
+          <div className="eyebrow">Korespondensi</div>
+          <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-6xl">Kirim pesan kepada kami.</h1>
           <p className="mt-8 max-w-md text-foreground/70">
-            We answer every letter personally, usually within one business day. Showroom visits are
-            by appointment.
+            Setiap pesan kami balas secara personal, biasanya dalam satu hari kerja. Kunjungan
+            showroom hanya dengan perjanjian.
           </p>
 
           <div className="mt-12 space-y-10 text-sm">
+           
             <div>
-              <div className="eyebrow mb-3">Atelier</div>
-              <div className="font-serif text-xl">Rådhusgata 14, 0151 Oslo</div>
-              <div className="mt-1 text-muted-foreground">By appointment · Tue — Sat</div>
+              <div className="eyebrow mb-3">Kontak Langsung</div>
+              <a href="mailto:forland.living@gmail.com" className="font-serif text-xl hover:opacity-80">
+                forland.living@gmail.com
+              </a>
+              <div className="mt-1 text-muted-foreground">+62 851-7427-1344</div>
             </div>
             <div>
-              <div className="eyebrow mb-3">Direct</div>
-              <a href="mailto:atelier@forland.living" className="font-serif text-xl hover:opacity-80">atelier@forland.living</a>
-              <div className="mt-1 text-muted-foreground">+47 22 00 00 00</div>
-            </div>
-            <div>
-              <div className="eyebrow mb-3">Care & Delivery</div>
+              <div className="eyebrow mb-3">Pengiriman & Perawatan</div>
               <div className="text-muted-foreground">
-                White-glove delivery worldwide. Lead times of 6 — 8 weeks. Every piece carries a
-                25-year structural guarantee.
+                Pengiriman white-glove ke seluruh Indonesia. Waktu pengerjaan 6 — 8 minggu. Setiap
+                karya dilengkapi garansi struktural 25 tahun.
               </div>
             </div>
           </div>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="grid gap-8">
-          <Field label="Your Name">
-            <input required className="w-full border-b hairline bg-transparent py-3 focus:border-foreground focus:outline-none" />
-          </Field>
-          <Field label="Email">
-            <input type="email" required className="w-full border-b hairline bg-transparent py-3 focus:border-foreground focus:outline-none" />
-          </Field>
-          <Field label="Interested In">
-            <select className="w-full border-b hairline bg-transparent py-3 focus:border-foreground focus:outline-none">
-              <option>A specific piece</option>
-              <option>Material samples</option>
-              <option>Showroom appointment</option>
-              <option>Trade & interiors</option>
-              <option>Something else</option>
-            </select>
-          </Field>
-          <Field label="Message">
-            <textarea rows={5} className="w-full border-b hairline bg-transparent py-3 focus:border-foreground focus:outline-none resize-none" />
-          </Field>
-          <button className="mt-4 self-start bg-foreground px-10 py-4 text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90">
-            Send Letter →
+        <form onSubmit={handleSubmit} className="grid gap-8">
+         <Field label="Nama Anda">
+  <input
+    name="nama"
+    required
+    placeholder="Nama lengkap Anda"
+    className="w-full border border-foreground/20 bg-transparent px-4 py-3 placeholder:text-muted-foreground/40 focus:border-foreground focus:outline-none transition-colors"
+  />
+</Field>
+<Field label="Pesan">
+  <textarea
+    name="pesan"
+    rows={6}
+    required
+    placeholder="Tuliskan pesan Anda di sini..."
+    className="w-full border border-foreground/20 bg-transparent px-4 py-3 placeholder:text-muted-foreground/40 focus:border-foreground focus:outline-none resize-none transition-colors"
+  />
+</Field>
+          <button
+            type="submit"
+            className="mt-4 self-start bg-foreground px-10 py-4 text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90"
+          >
+            Kirim Pesan →
           </button>
         </form>
       </div>

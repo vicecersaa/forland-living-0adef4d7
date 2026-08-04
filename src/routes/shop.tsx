@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { api } from "@/lib/api";
 import { useMemo, useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import type { Product } from "@/lib/types";
-import { LayoutGrid, Rows3, Star, Search, X } from "lucide-react";
+import { LayoutGrid, Rows3, Search, X } from "lucide-react";
 
 export const Route = createFileRoute("/shop")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -20,9 +18,7 @@ export const Route = createFileRoute("/shop")({
   component: ShopPage,
 });
 
-
 const sorts = ["Unggulan", "Harga · Terendah", "Harga · Tertinggi", "Terbaru"] as const;
-
 
 function ShopPage() {
   const { q: qParam } = Route.useSearch();
@@ -33,122 +29,67 @@ function ShopPage() {
   const [sort, setSort] = useState<(typeof sorts)[number]>("Unggulan");
   const [maxPrice, setMaxPrice] = useState<number>(0);
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [filterOpen, setFilterOpen] = useState(false);
   const query = (qParam ?? "").trim().toLowerCase();
 
-
   const categories = useMemo(() => {
-  return [
-    "Semua",
-    ...Array.from(
-      new Set(
-        products.map(
-          (p) => p.category.name
-        )
-      )
-    )
-  ];
-}, [products]);
+    return [
+      "Semua",
+      ...Array.from(new Set(products.map((p) => p.category.name))),
+    ];
+  }, [products]);
 
+  const priceMin = 0;
 
-const priceMin = 0;
-
-
-const priceMax = useMemo(() => {
-
-  if(products.length === 0) return 0;
-
-  return Math.max(
-    ...products.map(
-      p => p.minPrice
-    )
-  );
-
-}, [products]);
-
-useEffect(()=>{
-
-  setMaxPrice(priceMax);
-
-},[priceMax]);
+  const priceMax = useMemo(() => {
+    if (products.length === 0) return 0;
+    return Math.max(...products.map((p) => p.minPrice));
+  }, [products]);
 
   useEffect(() => {
+    setMaxPrice(priceMax);
+  }, [priceMax]);
 
-  const fetchProducts = async () => {
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/products`);
+        const json = await res.json();
+        setProducts(json.data.items);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
-    try {
+  const filtered = useMemo(() => {
+    let base = [...products];
 
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/products`
-      );
-
-      const json = await res.json();
-
-      setProducts(json.data.items);
-
-    } catch(error){
-
-      console.log(error);
-
-    } finally {
-
-      setLoading(false);
-
+    if (category !== "Semua") {
+      base = base.filter((p) => p.category.name === category);
     }
 
-  };
+    if (query) {
+      base = base.filter((p) => p.name.toLowerCase().includes(query));
+    }
 
+    if (maxPrice > 0 && maxPrice < priceMax) {
+      base = base.filter((p) => p.minPrice <= maxPrice);
+    }
 
-  fetchProducts();
+    if (sort === "Harga · Terendah") {
+      base.sort((a, b) => a.minPrice - b.minPrice);
+    }
 
-}, []);
+    if (sort === "Harga · Tertinggi") {
+      base.sort((a, b) => b.minPrice - a.minPrice);
+    }
 
-    
-const filtered = useMemo(() => {
-
-  let base = [...products];
-
-
-  if(category !== "Semua"){
-    base = base.filter(
-      p => p.category.name === category
-    );
-  }
-
-
-  if(query){
-
-    base = base.filter(
-      p =>
-      p.name.toLowerCase().includes(query) 
-     
-    );
-
-  }
-
-
-  if(sort === "Harga · Terendah"){
-    base.sort(
-      (a,b)=>a.minPrice - b.minPrice
-    );
-  }
-
-
-  if(sort === "Harga · Tertinggi"){
-    base.sort(
-      (a,b)=>b.minPrice - a.minPrice
-    );
-  }
-
-
-  return base;
-
-
-},[
- products,
- category,
- query,
- sort
-]);
+    return base;
+  }, [products, category, query, sort, maxPrice, priceMax]);
 
   return (
     <>
@@ -162,7 +103,7 @@ const filtered = useMemo(() => {
               </h1>
               <p className="mt-5 max-w-xl text-foreground/70">
                 {query
-                  ? `Menampilkan karya yang cocok dengan “${qParam}”.`
+                  ? `Menampilkan karya yang cocok dengan "${qParam}".`
                   : "Eksplorasi koleksi bed, kasur, dan perlengkapan tidur dengan desain timeless dan material pilihan untuk menciptakan pengalaman istirahat yang istimewa."}
               </p>
             </div>
@@ -174,7 +115,7 @@ const filtered = useMemo(() => {
           {query && (
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border hairline px-3 py-1.5 text-xs text-foreground/80">
               <Search className="h-3 w-3" strokeWidth={1.4} />
-              <span>“{qParam}”</span>
+              <span>"{qParam}"</span>
               <button
                 aria-label="Hapus pencarian"
                 onClick={() => navigate({ search: { q: undefined } as never })}
@@ -188,6 +129,7 @@ const filtered = useMemo(() => {
       </header>
 
       <div className="mx-auto max-w-[1600px] px-6 py-10 lg:px-12">
+        {/* Category tabs */}
         <div className="flex flex-wrap gap-x-8 gap-y-3 border-b hairline pb-6 text-[0.78rem] tracking-[0.2em] uppercase">
           {categories.map((c) => (
             <button
@@ -205,9 +147,22 @@ const filtered = useMemo(() => {
           ))}
         </div>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-16">
-          {/* Sidebar filters */}
-          <aside className="space-y-10">
+        {/* Mobile filter toggle */}
+        <div className="mt-6 flex items-center justify-between lg:hidden">
+          <button
+            onClick={() => setFilterOpen((v) => !v)}
+            className="border hairline px-4 py-2 text-[0.78rem] tracking-[0.2em] uppercase"
+          >
+            {filterOpen ? "Tutup Filter" : "Filter"}
+          </button>
+          <span className="text-xs text-muted-foreground">
+            {filtered.length} produk
+          </span>
+        </div>
+
+        <div className="mt-6 grid gap-10 lg:mt-10 lg:grid-cols-[220px_1fr] lg:gap-16">
+          {/* Sidebar filters — desktop selalu tampil, mobile toggle */}
+          <aside className={`space-y-10 ${filterOpen ? "block" : "hidden"} lg:block`}>
             <div>
               <div className="eyebrow">— Produk</div>
               <p className="mt-3 text-xs text-muted-foreground">
@@ -233,33 +188,28 @@ const filtered = useMemo(() => {
             </div>
 
             <div>
-  <h3 className="font-serif text-lg">Kategori</h3>
+              <h3 className="font-serif text-lg">Kategori</h3>
+              <ul className="mt-4 space-y-3 text-sm">
+                {categories.map((c) => (
+                  <li key={c}>
+                    <label className="flex cursor-pointer items-center gap-3 text-foreground/80 hover:text-foreground">
+                      <input
+                        type="radio"
+                        name="category"
+                        checked={category === c}
+                        onChange={() => setCategory(c)}
+                        className="h-3.5 w-3.5 accent-foreground"
+                      />
+                      {c}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-  <ul className="mt-4 space-y-3 text-sm">
-    {categories.map((c) => (
-      <li key={c}>
-        <label className="flex items-center gap-3 cursor-pointer text-foreground/80 hover:text-foreground">
-          <input
-            type="radio"
-            name="category"
-            checked={category === c}
-            onChange={() => setCategory(c)}
-            className="h-3.5 w-3.5 accent-foreground"
-          />
-
-          {c}
-        </label>
-      </li>
-    ))}
-  </ul>
-</div>
-
-            {(maxPrice !== priceMax) && (
+            {maxPrice !== priceMax && (
               <button
-                onClick={() => {
-                 
-                  setMaxPrice(priceMax);
-                }}
+                onClick={() => setMaxPrice(priceMax)}
                 className="eyebrow border-b hairline pb-0.5 text-muted-foreground hover:text-foreground"
               >
                 Reset filter
@@ -268,7 +218,7 @@ const filtered = useMemo(() => {
           </aside>
 
           {/* Main */}
-          <section>
+          <section className="min-w-0">
             <div className="flex items-center justify-between border-b hairline pb-4">
               <div className="flex items-center gap-1">
                 <button
@@ -333,133 +283,54 @@ const filtered = useMemo(() => {
   );
 }
 
-
-
-function PriceBlock({ product }: { product: Product }) {
-
-  return (
-    <div className="flex items-baseline gap-2 tabular-nums">
-
-      <span className="text-sm">
-        Rp{product.minPrice.toLocaleString("id-ID")}
-      </span>
-
-    </div>
-  );
-
-}
-
-
-
 function ShopGridCard({ product }: { product: Product }) {
-
   return (
-
     <Link
-  to="/products/$slug"
-  params={{
-    slug: product.slug
-  }}
-      className="group block"
+      to="/products/$slug"
+      params={{ slug: product.slug }}
+      className="group block min-w-0"
     >
-
       <div className="relative aspect-[5/5] overflow-hidden bg-surface">
-
         <img
           src={product.thumbnail}
           alt={product.name}
           loading="lazy"
-          className="
-          absolute inset-0 
-          h-full 
-          w-full 
-          object-cover 
-          transition-transform 
-          duration-[1400ms]
-          group-hover:scale-[1.03]
-          "
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] group-hover:scale-[1.03]"
         />
-
       </div>
 
-
-      <div className="mt-5 flex justify-between gap-6">
-
-        <div>
-
-          <h3 className="font-serif text-lg">
-            {product.name}
-          </h3>
-
-
-         
-
-
+      <div className="mt-5 flex items-start justify-between gap-4">
+        <h3 className="min-w-0 flex-1 break-words font-serif text-lg leading-snug">
+          {product.name}
+        </h3>
+        <div className="shrink-0 text-sm tabular-nums">
+          Rp{product.minPrice.toLocaleString("id-ID")}
         </div>
-
-
-        <div className="text-sm">
-
-          Rp
-          {product.minPrice.toLocaleString("id-ID")}
-
-        </div>
-
-
       </div>
-
-
     </Link>
-
   );
-
 }
 
 function ShopListRow({ product }: { product: Product }) {
+  return (
+    <Link
+      to="/products/$slug"
+      params={{ slug: product.slug }}
+      className="grid grid-cols-[80px_1fr_auto] items-center gap-6 py-6 sm:grid-cols-[160px_1fr_auto] sm:gap-8"
+    >
+      <img
+        src={product.thumbnail}
+        alt={product.name}
+        className="aspect-square w-full object-cover"
+      />
 
-return (
+      <div className="min-w-0">
+        <h3 className="break-words font-serif text-lg sm:text-xl">{product.name}</h3>
+      </div>
 
-<Link
-to="/products/$slug"
-  params={{
-    slug: product.slug
-  }}
-className="
-grid 
-grid-cols-[160px_1fr_auto]
-gap-8
-py-6
-"
->
-
-
-<img
-src={product.thumbnail}
-className="
-aspect-square
-object-cover
-"
-/>
-
-
-<div>
-
-<h3 className="font-serif text-xl">
-{product.name}
-</h3>
-
-
-
-</div>
-
-
-<div>
-Rp{product.minPrice.toLocaleString("id-ID")}
-</div>
-
-
-</Link>
-
-);
-
+      <div className="shrink-0 text-sm tabular-nums">
+        Rp{product.minPrice.toLocaleString("id-ID")}
+      </div>
+    </Link>
+  );
 }

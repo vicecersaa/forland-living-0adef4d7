@@ -89,13 +89,13 @@ function ProductPage() {
   return (
     <>
       <div className="mx-auto max-w-[1600px] px-6 pt-24 lg:px-12 lg:pt-32">
-        <nav className="text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">Beranda</Link>
-          <span className="mx-3">/</span>
-          <Link to="/shop" search={{ q: undefined }} className="hover:text-foreground">Katalog</Link>
-          <span className="mx-3">/</span>
-          <span className="text-foreground">{product.name}</span>
-        </nav>
+        <nav className="text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground flex items-center flex-wrap gap-y-1">
+  <Link to="/" className="hover:text-foreground shrink-0">Beranda</Link>
+  <span className="mx-3 shrink-0">/</span>
+  <Link to="/shop" search={{ q: undefined }} className="hover:text-foreground shrink-0">Katalog</Link>
+  <span className="mx-3 shrink-0">/</span>
+  <span className="text-foreground truncate min-w-0">{product.name}</span>
+</nav>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-20">
 
@@ -207,7 +207,7 @@ function ProductPage() {
           {/* Info */}
           <div className="lg:sticky lg:top-32 lg:self-start min-w-0">
             <div className="eyebrow">{product.category?.name}</div>
-            <h1 className="mt-4 font-serif text-4xl leading-[1.05] md:text-5xl">{product.name}</h1>
+            <h1 className="mt-4 font-serif text-4xl leading-[1.05] md:text-5xl break-words">{product.name}</h1>
             <div className="mt-6 text-lg tabular-nums">
               Rp{currentPrice.toLocaleString("id-ID")}
             </div>

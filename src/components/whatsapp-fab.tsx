@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const WHATSAPP_NUMBER = "6281234567890"; // ganti dengan nomor asli Forland
+const WHATSAPP_NUMBER = "6285174271344"; 
 const MESSAGE = "Halo Forland Living, saya ingin bertanya tentang koleksi kasur & bed.";
 
 export function WhatsAppFab() {

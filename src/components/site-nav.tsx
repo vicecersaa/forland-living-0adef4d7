@@ -8,9 +8,7 @@ import { SearchOverlay } from "./search-overlay";
 
 const links = [
   { to: "/shop", label: "Belanja" },
-  { to: "/shop", label: "Bed" },
-  { to: "/shop", label: "Kasur" },
-  { to: "/warranty", label: "Garansi" }, // <- tambah ini
+  { to: "/shop", label: "Koleksi" },
   { to: "/journal", label: "Jurnal" },
   { to: "/about", label: "Tentang" },
   { to: "/contact", label: "Kontak" },

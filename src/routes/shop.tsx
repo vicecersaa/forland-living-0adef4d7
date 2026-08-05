@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import type { Product } from "@/lib/types";
+
 import { LayoutGrid, Rows3, Search, X } from "lucide-react";
 import { SmartImage } from "@/components/SmartImage";
+import type { Product } from "@/lib/types";
 
 export const Route = createFileRoute("/shop")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -19,6 +20,21 @@ export const Route = createFileRoute("/shop")({
   component: ShopPage,
 });
 
+function resolvePrice(product: Product): number {
+  if (!product.variants?.length) {
+    return product.price ?? product.minPrice;
+  }
+
+  const variant = product.variants[0];
+  if (!variant) return product.minPrice;
+
+  if (!variant.sizes?.length) {
+    return variant.price ?? product.minPrice;
+  }
+
+  return variant.sizes[0]?.price ?? product.minPrice;
+}
+
 const sorts = ["Unggulan", "Harga · Terendah", "Harga · Tertinggi", "Terbaru"] as const;
 
 function ShopPage() {
@@ -28,10 +44,10 @@ function ShopPage() {
   const navigate = Route.useNavigate();
   const [category, setCategory] = useState("Semua");
   const [sort, setSort] = useState<(typeof sorts)[number]>("Unggulan");
-  const [maxPrice, setMaxPrice] = useState<number>(0);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [filterOpen, setFilterOpen] = useState(false);
   const query = (qParam ?? "").trim().toLowerCase();
+ const [priceFilter, setPriceFilter] = useState("Semua");
 
   const categories = useMemo(() => {
     return [
@@ -40,16 +56,9 @@ function ShopPage() {
     ];
   }, [products]);
 
-  const priceMin = 0;
+ 
 
-  const priceMax = useMemo(() => {
-    if (products.length === 0) return 0;
-    return Math.max(...products.map((p) => p.minPrice));
-  }, [products]);
 
-  useEffect(() => {
-    setMaxPrice(priceMax);
-  }, [priceMax]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -82,20 +91,31 @@ function ShopPage() {
       );
     }
 
-    if (maxPrice > 0 && maxPrice < priceMax) {
-      base = base.filter((p) => p.minPrice <= maxPrice);
-    }
+    if (priceFilter === "<5jt") {
+  base = base.filter((p) => resolvePrice(p) < 5000000);
+}
 
-    if (sort === "Harga · Terendah") {
-      base.sort((a, b) => a.minPrice - b.minPrice);
-    }
+if (priceFilter === "5jt-10jt") {
+  base = base.filter((p) => {
+    const price = resolvePrice(p);
+    return price >= 5000000 && price <= 10000000;
+  });
+}
 
-    if (sort === "Harga · Tertinggi") {
-      base.sort((a, b) => b.minPrice - a.minPrice);
-    }
+if (priceFilter === "10jt-20jt") {
+  base = base.filter((p) => {
+    const price = resolvePrice(p);
+    return price >= 10000000 && price <= 20000000;
+  });
+}
 
-    return base;
-  }, [products, category, query, sort, maxPrice, priceMax]);
+if (priceFilter === ">20jt") {
+  base = base.filter((p) => resolvePrice(p) > 20000000);
+}
+
+   return base;
+
+}, [products, category, query, sort, priceFilter]);
 
   return (
     <>
@@ -165,60 +185,105 @@ function ShopPage() {
         </div>
 
         <div className="mt-6 grid gap-10 lg:mt-10 lg:grid-cols-[220px_1fr] lg:gap-16">
-          <aside className={`space-y-10 ${filterOpen ? "block" : "hidden"} lg:block`}>
-            <div>
-              <div className="eyebrow">— Produk</div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Menampilkan {filtered.length} dari {products.length}
-              </p>
-            </div>
+          <aside
+  className={`
+    space-y-10
+    lg:sticky
+    lg:top-28
+    lg:self-start
+    ${filterOpen ? "block" : "hidden"}
+    lg:block
+  `}
+>
+  {/* Intro */}
+  <div>
+    <div className="eyebrow">— Koleksi</div>
 
-            <div>
-              <h3 className="font-serif text-lg">Harga</h3>
-              <input
-                type="range"
-                min={priceMin}
-                max={priceMax}
-                step={100}
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="mt-4 w-full accent-foreground"
-              />
-              <div className="mt-2 flex justify-between text-xs text-muted-foreground tabular-nums">
-                <span>Rp{priceMin.toLocaleString("id-ID")}</span>
-                <span>Hingga Rp{maxPrice.toLocaleString("id-ID")}</span>
-              </div>
-            </div>
+    <h2 className="mt-3 font-serif text-2xl">
+      Pencarian
+    </h2>
 
-            <div>
-              <h3 className="font-serif text-lg">Kategori</h3>
-              <ul className="mt-4 space-y-3 text-sm">
-                {categories.map((c) => (
-                  <li key={c}>
-                    <label className="flex cursor-pointer items-center gap-3 text-foreground/80 hover:text-foreground">
-                      <input
-                        type="radio"
-                        name="category"
-                        checked={category === c}
-                        onChange={() => setCategory(c)}
-                        className="h-3.5 w-3.5 accent-foreground"
-                      />
-                      {c}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
+    <p className="mt-3 text-sm leading-7 text-foreground/55">
+      Menampilkan {filtered.length} dari {products.length} koleksi.
+    </p>
+  </div>
 
-            {maxPrice !== priceMax && (
-              <button
-                onClick={() => setMaxPrice(priceMax)}
-                className="eyebrow border-b hairline pb-0.5 text-muted-foreground hover:text-foreground"
-              >
-                Reset filter
-              </button>
-            )}
-          </aside>
+
+  {/* Category */}
+  <div className="border-t border-foreground/10 pt-8">
+    <div className="mb-5 text-[0.7rem] uppercase tracking-[0.22em] text-foreground/45">
+      Kategori
+    </div>
+
+    <div className="space-y-1">
+      {categories.map((c) => {
+        const count =
+          c === "Semua"
+            ? products.length
+            : products.filter(
+                (p) => p.category.name === c
+              ).length;
+
+        return (
+          <button
+            key={c}
+            onClick={() => setCategory(c)}
+            className={`
+              flex w-full items-center justify-between
+              border-b border-foreground/5
+              py-3
+              text-sm
+              transition-colors
+              ${
+                category === c
+                  ? "text-foreground"
+                  : "text-foreground/50 hover:text-foreground"
+              }
+            `}
+          >
+            <span>{c}</span>
+
+            <span className="text-xs tabular-nums text-foreground/35">
+              {count}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+
+
+  
+
+  {/* Help Card */}
+  <div className="border border-foreground/10 p-6">
+    <div className="font-serif text-xl">
+      Need Assistance?
+    </div>
+
+    <p className="mt-3 text-sm leading-7 text-foreground/55">
+      Tim kami siap membantu memilih produk
+      yang sesuai dengan kebutuhan ruang Anda.
+    </p>
+
+    <Link
+      to="/contact"
+      className="
+        mt-5
+        inline-block
+        text-[0.7rem]
+        uppercase
+        tracking-[0.22em]
+        border-b
+        border-foreground/30
+        pb-1
+      "
+    >
+      Hubungi Kami →
+    </Link>
+  </div>
+
+</aside>
 
           <section className="min-w-0">
             <div className="flex items-center justify-between border-b hairline pb-4">
@@ -299,15 +364,29 @@ function ShopGridCard({ product }: { product: Product }) {
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] group-hover:scale-[1.03]"
         />
+        <div
+  className="
+    absolute inset-0
+    bg-black/0
+    transition-all
+    duration-500
+    group-hover:bg-black/5
+  "
+/>
       </div>
-      <div className="mt-5 flex items-start justify-between gap-4">
-        <h3 className="min-w-0 flex-1 break-words font-serif text-lg leading-snug">
-          {product.name}
-        </h3>
-        <div className="shrink-0 text-sm tabular-nums">
-          Rp{product.minPrice.toLocaleString("id-ID")}
-        </div>
-      </div>
+      <div className="mt-7 space-y-2">
+  <div className="text-[11px] uppercase tracking-[0.22em] text-foreground/45">
+    {product.category.name}
+  </div>
+
+  <h3 className="font-serif text-2xl leading-tight transition-colors duration-300 group-hover:text-foreground/80">
+    {product.name}
+  </h3>
+
+  <div className="pt-2 text-lg font-medium tracking-tight tabular-nums">
+    Rp {resolvePrice(product).toLocaleString("id-ID")}
+  </div>
+</div>
     </Link>
   );
 }
@@ -326,12 +405,19 @@ function ShopListRow({ product }: { product: Product }) {
           className="absolute inset-0 h-full w-full object-cover"
         />
       </div>
-      <div className="min-w-0">
-        <h3 className="break-words font-serif text-lg sm:text-xl">{product.name}</h3>
-      </div>
-      <div className="shrink-0 text-sm tabular-nums">
-        Rp{product.minPrice.toLocaleString("id-ID")}
-      </div>
+      <div className="min-w-0 space-y-2">
+  <div className="text-[11px] uppercase tracking-[0.18em] text-foreground/45">
+    {product.category.name}
+  </div>
+
+  <h3 className="font-serif text-2xl leading-tight">
+    {product.name}
+  </h3>
+
+  <div className="text-sm font-medium">
+    Rp {resolvePrice(product).toLocaleString("id-ID")}
+  </div>
+</div>
     </Link>
   );
 }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { ongkirData, findOngkir } from "@/data/ongkir";
+import type { Product } from "@/lib/cart";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -14,6 +15,28 @@ export const Route = createFileRoute("/checkout")({
   }),
   component: CheckoutPage,
 });
+
+function resolvePrice(product: Product, color: string, size: string): number {
+  if (!product.variants?.length) {
+    return product.price ?? 0;
+  }
+
+  const variant = product.variants.find(
+    (v) => v.name === color
+  );
+
+  if (!variant) return 0;
+
+  if (!variant.sizes?.length) {
+    return product.price ?? 0;
+  }
+
+  const selectedSize = variant.sizes.find(
+    (s) => s.name === size
+  );
+
+  return selectedSize?.price ?? 0;
+}
 
 const WA_ADMIN = "6285174271344";
 
@@ -57,6 +80,7 @@ function CheckoutPage() {
     notes: "",
   });
 
+    
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get("order_id");
@@ -80,7 +104,7 @@ function CheckoutPage() {
           });
           setShippingCost(order.shippingCost);
           setIsCOD(order.isCOD);
-          setShippingLabel(order.isCOD ? "COD" : `Rp${order.shippingCost.toLocaleString("id-ID")}`);
+          setShippingLabel(order.isCOD ? "COD" : `Rp ${order.shippingCost.toLocaleString("id-ID")}`);
           setIsFromLink(true);
           setPendingOrderId(orderId);
         }
@@ -88,9 +112,8 @@ function CheckoutPage() {
       .catch(() => setError("Link tidak valid atau sudah expired."));
   }, []);
 
-  const discountedSubtotal = subtotal - discount;
-  const tax = Math.round(discountedSubtotal * 0.11);
-  const total = discountedSubtotal + shippingCost + tax;
+  // Fix #4 — hapus tax
+  const total = (subtotal - discount) + shippingCost;
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -122,6 +145,18 @@ function CheckoutPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    // Fix #3 — validasi stok sebelum proses
+    if (!isFromLink) {
+      const outOfStock = resolved.find(
+  item => item.product.totalStock < item.qty
+);
+      if (outOfStock) {
+        setError(`Stok ${outOfStock.product.name} tidak mencukupi. Silakan perbarui keranjang Anda.`);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -138,12 +173,6 @@ function CheckoutPage() {
         return;
       }
 
-      const ongkirResult = findOngkir(form.city);
-      const ongkirCost = ongkirResult?.cost ?? 0;
-
-      setShippingCost(ongkirCost);
-      setShippingLabel(`Rp${ongkirCost.toLocaleString("id-ID")}`);
-
       const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/checkout`, {
         method: "POST",
         credentials: "include",
@@ -158,13 +187,20 @@ function CheckoutPage() {
             postalCode: form.postalCode,
             address: form.address,
           },
-          shippingCost: ongkirCost,
+          shippingCost,
           notes: form.notes,
           coupon,
         }),
       });
       const checkoutJson = await checkoutRes.json();
-      if (!checkoutRes.ok) throw new Error(checkoutJson.message ?? "Gagal membuat pesanan");
+      if (!checkoutRes.ok) {
+        // Fix #3 — error handler stok dari backend
+        const msg = checkoutJson.message ?? "Gagal membuat pesanan";
+        if (msg.toLowerCase().includes("stock") || msg.toLowerCase().includes("stok")) {
+          throw new Error(`Stok produk tidak mencukupi. Silakan perbarui keranjang Anda.`);
+        }
+        throw new Error(msg);
+      }
 
       const orderId = checkoutJson.data._id;
 
@@ -218,10 +254,12 @@ function CheckoutPage() {
                 Hubungi admin kami melalui WhatsApp untuk mengetahui biaya pengiriman ke kota Anda. Admin akan membantu proses pemesanan Anda.
               </p>
             </div>
-            
-             <a href={waUrl}
+            {/* Fix #5 — redirect ke home setelah buka WA */}
+            <a
+              href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => setTimeout(() => navigate({ to: "/" }), 500)}
               className="mt-10 block w-full bg-foreground py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90 transition-opacity"
             >
               Chat Admin via WhatsApp
@@ -246,51 +284,58 @@ function CheckoutPage() {
           <Section title="Alamat Pengiriman">
             <Field label="Alamat Lengkap" name="address" value={form.address} onChange={handleChange} required disabled={isFromLink} />
             <div className="grid gap-6 sm:grid-cols-2 relative">
-  <Field label="Kecamatan" name="district" value={form.district} onChange={handleChange} required disabled={isFromLink} />
-  <CitySelect
+              <Field label="Kecamatan" name="district" value={form.district} onChange={handleChange} required disabled={isFromLink} />
+              {/* Fix #1 — ongkir update saat pilih kota */}
+              <CitySelect
                 value={form.city}
                 onChange={(city) => {
                   setForm(prev => ({ ...prev, city }));
-                  setShippingCost(0);
-                  setShippingLabel(null);
+                  const result = findOngkir(city);
+                  if (result) {
+                    setShippingCost(result.cost);
+                    setShippingLabel(`Rp ${result.cost.toLocaleString("id-ID")}`);
+                  } else {
+                    setShippingCost(0);
+                    setShippingLabel(null);
+                  }
                   setIsCOD(false);
                 }}
                 disabled={isFromLink}
                 onNotFound={async () => {
-  try {
-    const pendingRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/pending-ongkir`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        shippingAddress: {
-          name: form.name,
-          phone: form.phone,
-          province: form.province,
-          city: form.city || "Belum dipilih",
-          district: form.district,
-          postalCode: form.postalCode,
-          address: form.address,
-        },
-        notes: form.notes,
-        items: resolved.map(i => ({
-          product: i.id,
-          variant: i.color,
-          size: i.size,
-          quantity: i.qty,
-        })),
-      }),
-    });
-    const pendingJson = await pendingRes.json();
-    if (pendingJson?.data?.orderNumber) {
-      setPendingOrderNumber(pendingJson.data.orderNumber);
-      setPendingOrderId(pendingJson.data._id);
-    }
-  } catch {
-    // silent fail
-  }
-  setShowWAPopup(true);
-}}
+                  try {
+                    const pendingRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/pending-ongkir`, {
+                      method: "POST",
+                      credentials: "include",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        shippingAddress: {
+                          name: form.name,
+                          phone: form.phone,
+                          province: form.province,
+                          city: form.city || "Belum dipilih",
+                          district: form.district,
+                          postalCode: form.postalCode,
+                          address: form.address,
+                        },
+                        notes: form.notes,
+                        items: resolved.map(i => ({
+                          product: i.id,
+                          variant: i.color,
+                          size: i.size,
+                          quantity: i.qty,
+                        })),
+                      }),
+                    });
+                    const pendingJson = await pendingRes.json();
+                    if (pendingJson?.data?.orderNumber) {
+                      setPendingOrderNumber(pendingJson.data.orderNumber);
+                      setPendingOrderId(pendingJson.data._id);
+                    }
+                  } catch {
+                    // silent fail
+                  }
+                  setShowWAPopup(true);
+                }}
               />
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
@@ -316,46 +361,36 @@ function CheckoutPage() {
         </div>
 
         <aside className="lg:sticky lg:top-32 lg:self-start">
-          <div className="border hairline p-8">
+          <div
+  className="
+    border
+    border-foreground/10
+    bg-background
+    p-8
+    shadow-[0_20px_60px_rgba(0,0,0,0.04)]
+  "
+>
             <div className="eyebrow">Pesanan</div>
 
-            <div className="mt-8 border-t hairline pt-6">
-              <div className="eyebrow mb-4">Kode Voucher</div>
-              <div className="flex gap-3">
-                <input
-                  value={coupon}
-                  onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                  placeholder="Masukkan kode voucher"
-                  className="flex-1 border hairline bg-transparent px-4 py-3 text-sm outline-none transition-colors focus:border-foreground"
-                />
-                <button
-                  type="button"
-                  onClick={applyCoupon}
-                  disabled={couponLoading}
-                  className="min-w-[120px] bg-foreground px-5 py-3 text-xs uppercase tracking-[0.2em] text-background transition hover:opacity-90 disabled:opacity-50"
-                >
-                  {couponLoading ? "..." : "Gunakan"}
-                </button>
-              </div>
-              {couponMessage && (
-                <div className={`mt-4 border p-4 text-sm ${discount > 0 ? "border-green-300 bg-green-50 text-green-700" : "border-red-300 bg-red-50 text-red-700"}`}>
-                  <div className="font-medium">
-                    {discount > 0 ? "✓ Voucher berhasil digunakan" : couponMessage}
-                  </div>
-                  {discount > 0 && (
-                    <div className="mt-1">
-                      Potongan sebesar <strong>Rp{discount.toLocaleString("id-ID")}</strong> telah diterapkan.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            
 
             <ul className="mt-6 space-y-5">
               {resolved.map((item) => (
                 <li key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
-                  <div className="h-20 w-16 flex-shrink-0 bg-surface">
-                    <img src={item.product.thumbnail || item.product.images?.[0]} alt="" className="h-full w-full object-cover" />
+                  <div
+  className="
+    h-24
+    w-20
+    flex-shrink-0
+    overflow-hidden
+    bg-surface
+  "
+>
+                    <img
+  src={item.product.thumbnail || item.product.images?.[0]}
+  alt=""
+  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+/>
                   </div>
                   <div className="flex flex-1 flex-col justify-between text-sm">
                     <div>
@@ -369,22 +404,43 @@ function CheckoutPage() {
                     </div>
                   </div>
                   <div className="tabular-nums text-sm">
-                    Rp{(item.product.minPrice * item.qty).toLocaleString("id-ID")}
+                    Rp {(resolvePrice(item.product, item.color, item.size) * item.qty).toLocaleString("id-ID")}
                   </div>
                 </li>
               ))}
             </ul>
 
+            <div className="mt-8 border-t hairline pt-6">
+  <div className="eyebrow mb-4">Kode Voucher</div>
+  <div className="flex gap-3">
+    <input
+      value={coupon}
+      onChange={(e) => setCoupon(e.target.value.toUpperCase())}
+      placeholder="Masukkan kode voucher"
+      className="flex-1 border hairline bg-transparent px-4 py-3 text-sm outline-none transition-colors focus:border-foreground"
+    />
+    <button
+      type="button"
+      onClick={applyCoupon}
+      disabled={couponLoading}
+      className="min-w-[120px] bg-foreground px-5 py-3 text-xs uppercase tracking-[0.2em] text-background transition hover:opacity-90 disabled:opacity-50"
+    >
+      {couponLoading ? "..." : "Gunakan"}
+    </button>
+  </div>
+...
+</div>
+
             <dl className="mt-8 space-y-3 border-t hairline pt-6 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
-                <dd className="tabular-nums">Rp{subtotal.toLocaleString("id-ID")}</dd>
+                <dd className="tabular-nums">Rp {subtotal.toLocaleString("id-ID")}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Pengiriman</dt>
                 <dd className="tabular-nums">
                   {shippingLabel === null ? (
-                    <span className="text-muted-foreground italic text-xs">Dihitung saat checkout</span>
+                    <span className="text-muted-foreground italic text-xs">-</span>
                   ) : shippingLabel === "COD" ? (
                     "COD (bayar di tempat)"
                   ) : (
@@ -395,19 +451,17 @@ function CheckoutPage() {
               {discount > 0 && (
                 <div className="flex justify-between text-green-600">
                   <dt>Diskon Voucher</dt>
-                  <dd className="font-medium tabular-nums">-Rp{discount.toLocaleString("id-ID")}</dd>
+                  <dd className="font-medium tabular-nums">-Rp {discount.toLocaleString("id-ID")}</dd>
                 </div>
               )}
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Estimasi PPN 11%</dt>
-                <dd className="tabular-nums">Rp{tax.toLocaleString("id-ID")}</dd>
-              </div>
             </dl>
 
             <div className="mt-6 flex justify-between border-t hairline pt-6 font-serif text-lg">
               <span>Total</span>
-              <span className="tabular-nums">Rp{total.toLocaleString("id-ID")}</span>
+              <span className="tabular-nums">Rp {total.toLocaleString("id-ID")}</span>
             </div>
+
+            
 
             <button
               type="submit"
@@ -456,35 +510,79 @@ function CitySelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  return (
-    <div ref={ref} className="block">
+ return (
+  <div ref={ref} className="relative block w-full">
       <span className="eyebrow block">Kota</span>
       <button
-        type="button"
-        disabled={disabled}
-        onClick={() => !disabled && setOpen(prev => !prev)}
-        className="mt-2 w-full border-b hairline bg-transparent py-3 text-left text-[0.95rem] outline-none transition-colors focus:border-foreground disabled:opacity-40 disabled:cursor-not-allowed flex justify-between items-center"
-      >
-        <span className={value ? "text-foreground" : "text-muted-foreground"}>
-          {selected ? selected.city : "Pilih kota tujuan..."}
-        </span>
-        <span className="text-muted-foreground text-xs ml-2">{open ? "▲" : "▼"}</span>
-      </button>
+  type="button"
+  disabled={disabled}
+  onClick={() => !disabled && setOpen(prev => !prev)}
+  className="
+    mt-3
+    w-full
+    border
+    border-foreground/15
+    bg-background
+    px-5
+    py-4
+    text-left
+    flex
+    items-center
+    justify-between
+    transition-all
+    hover:border-foreground/40
+    disabled:opacity-40
+    disabled:cursor-not-allowed
+  "
+>
+  <span
+    className={
+      value
+        ? "text-[0.95rem] text-foreground font-medium"
+        : "text-[0.95rem] text-foreground/40"
+    }
+  >
+    {selected ? selected.city : "Pilih kota tujuan"}
+  </span>
 
+  <span className="
+    text-[0.65rem]
+    uppercase
+    tracking-[0.22em]
+    text-foreground/40
+  ">
+    {open ? "Tutup" : "Pilih"}
+  </span>
+</button>
       {open && (
-        <div className="absolute z-40 mt-1 w-full max-h-64 overflow-y-auto border hairline bg-background shadow-sm">
+  <div className="absolute left-0 top-full z-40 mt-2 w-full max-h-64 overflow-y-auto border hairline bg-background shadow-lg">
           {ongkirData.map((item) => (
             <button
-              key={item.city}
-              type="button"
-              onClick={() => {
-                onChange(item.city);
-                setOpen(false);
-              }}
-              className={`w-full px-4 py-3 text-left text-sm transition-colors hover:bg-foreground/5 ${value === item.city ? "bg-foreground/10 font-medium" : ""}`}
-            >
-              {item.city}
-            </button>
+  key={item.city}
+  type="button"
+  onClick={() => {
+    onChange(item.city);
+    setOpen(false);
+  }}
+  className={`
+    w-full
+    px-4
+    py-2.5
+    text-left
+    text-[0.78rem]
+    uppercase
+    tracking-[0.14em]
+    transition-colors
+    hover:bg-foreground/5
+    ${
+      value === item.city
+        ? "bg-foreground/5 text-foreground font-medium"
+        : "text-foreground/70"
+    }
+  `}
+>
+  {item.city}
+</button>
           ))}
           <button
             type="button"
@@ -515,7 +613,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Field({
-  label, name, type = "text", required, placeholder, value, onChange, disabled,
+  label,
+  name,
+  type = "text",
+  required,
+  placeholder,
+  value,
+  onChange,
+  disabled,
 }: {
   label: string;
   name: string;
@@ -527,8 +632,21 @@ function Field({
   disabled?: boolean;
 }) {
   return (
-    <label className="block">
-      <span className="eyebrow block">{label}</span>
+    <label className="group block">
+      <span
+        className="
+          block
+          text-[0.68rem]
+          uppercase
+          tracking-[0.18em]
+          text-foreground/45
+          transition-colors
+          group-focus-within:text-foreground
+        "
+      >
+        {label}
+      </span>
+
       <input
         name={name}
         type={type}
@@ -537,7 +655,24 @@ function Field({
         value={value}
         onChange={onChange}
         disabled={disabled}
-        className="mt-2 w-full border-b hairline bg-transparent py-3 text-[0.95rem] outline-none transition-colors focus:border-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+        className="
+          mt-3
+          w-full
+          border-b
+          border-foreground/15
+          bg-foreground/[0.02]
+          px-3
+          py-3.5
+          text-[0.95rem]
+          text-foreground
+          outline-none
+          transition-all
+          placeholder:text-foreground/25
+          focus:border-foreground
+          focus:bg-foreground/[0.04]
+          disabled:cursor-not-allowed
+          disabled:opacity-40
+        "
       />
     </label>
   );

@@ -218,7 +218,7 @@ function PromoBanner() {
   if (slides.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-[1600px] px-6 pt-10 md:pt-16 lg:px-12 lg:pt-20">
+    <section className="mx-auto max-w-[1600px] px-4 pt-10 md:px-6 md:pt-16 lg:px-12 lg:pt-20">
       <div className="relative overflow-hidden rounded">
         <div
           className="flex transition-transform duration-700 ease-in-out"
@@ -226,39 +226,43 @@ function PromoBanner() {
         >
           {slides.map((banner) => (
             <div key={banner._id} className="relative min-w-full">
-              {banner.link ? (
-                <a href={banner.link} target="_self">
+              {/* aspect-[2/1] di mobile, fixed height di md ke atas */}
+              <div className="aspect-[2/1] md:aspect-auto md:h-[360px]">
+                {banner.link ? (
+                  <a href={banner.link} target="_self" className="block h-full">
+                    <SmartImage
+                      src={banner.image}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  </a>
+                ) : (
                   <SmartImage
                     src={banner.image}
                     alt=""
-                    className="h-[260px] w-full object-cover md:h-[360px] lg:h-[360px]"
+                    className="h-full w-full object-cover"
                   />
-                </a>
-              ) : (
-                <SmartImage
-                  src={banner.image}
-                  alt=""
-                  className="h-[260px] w-full object-cover md:h-[360px] lg:h-[360px]"
-                />
-              )}
+                )}
+              </div>
             </div>
           ))}
         </div>
+
         {slides.length > 1 && (
           <>
             <button
               onClick={() => go(-1)}
-              className="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 backdrop-blur hover:bg-white md:flex"
+              className="absolute left-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 backdrop-blur hover:bg-white md:flex"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => go(1)}
-              className="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 backdrop-blur hover:bg-white md:flex"
+              className="absolute right-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 backdrop-blur hover:bg-white md:flex"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4" />
             </button>
-            <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">
+            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
               {slides.map((_, index) => (
                 <button
                   key={index}

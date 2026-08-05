@@ -1,3 +1,19 @@
+export interface Size {
+  name: string;
+  sku: string;
+  price: number;
+  stock: number;
+}
+
+export interface Variant {
+  name: string;
+  sku: string;
+  thumbnail?: string;
+  price?: number; // kalau ada variant tanpa size
+  stock?: number;
+  sizes: Size[];
+}
+
 export interface Product {
   _id: string;
 
@@ -17,6 +33,8 @@ export interface Product {
 
   thumbnail: string;
 
+  video?: string;
+
   price: number | null;
 
   minPrice: number;
@@ -25,7 +43,7 @@ export interface Product {
 
   totalStock: number;
 
-  variants: any[];
+  variants: Variant[];
 
   isActive: boolean;
 }

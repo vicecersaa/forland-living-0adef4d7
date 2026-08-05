@@ -57,12 +57,27 @@ const Ctx = createContext<CartCtx | null>(null);
 const KEY = "forland.cart.v3";
 
 function resolvePrice(product: Product, color: string, size: string): number {
-  if (!product.variants?.length) return product.price ?? product.minPrice;
+  // produk tanpa variant
+  if (!product.variants?.length) {
+    return product.price ?? 0;
+  }
+
+  // cari variant yang dipilih
   const variant = product.variants.find((v) => v.name === color);
-  if (!variant) return product.minPrice;
-  if (!variant.sizes?.length) return product.minPrice;
-  const s = variant.sizes.find((s) => s.name === size);
-  return s?.price ?? product.minPrice;
+
+  if (!variant) return 0;
+
+  // variant tanpa size
+  if (!variant.sizes?.length) {
+    return product.price ?? 0;
+  }
+
+  // cari size yang dipilih
+  const selectedSize = variant.sizes.find(
+    (s) => s.name === size
+  );
+
+  return selectedSize?.price ?? 0;
 }
 
 async function isLoggedIn(): Promise<boolean> {

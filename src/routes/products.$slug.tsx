@@ -7,12 +7,25 @@ import type { Product, Variant, Size } from "@/lib/cart";
 import { SmartImage } from "@/components/SmartImage";
 
 function resolvePrice(product: Product, variantName: string, sizeName: string): number {
-  if (!product.variants?.length) return product.price ?? product.minPrice;
-  const variant = product.variants.find((v) => v.name === variantName);
-  if (!variant) return product.minPrice;
-  if (!variant.sizes?.length) return product.minPrice;
-  const size = variant.sizes.find((s) => s.name === sizeName);
-  return size?.price ?? product.minPrice;
+  if (!product.variants?.length) {
+    return product.price ?? 0;
+  }
+
+  const variant = product.variants.find(
+    (v) => v.name === variantName
+  );
+
+  if (!variant) return 0;
+
+  if (!variant.sizes?.length) {
+    return product.price ?? 0;
+  }
+
+  const size = variant.sizes.find(
+    (s) => s.name === sizeName
+  );
+
+  return size?.price ?? 0;
 }
 
 export const Route = createFileRoute("/products/$slug")({
@@ -59,11 +72,18 @@ function ProductPage() {
   const { add } = useCart();
   const navigate = useNavigate();
 
-  const images = product.images?.length ? product.images : product.thumbnail ? [product.thumbnail] : [];
+  // FIX #6: Susun mediaItems dengan thumbnail sebagai gambar pertama jika belum ada di images
+  const rawImages = product.images?.length ? product.images : [];
+  // Pastikan thumbnail selalu jadi elemen pertama kalau belum ada di array images
+  const imagesWithThumbnail = product.thumbnail
+  ? [product.thumbnail, ...rawImages.filter((img) => img !== product.thumbnail)]
+  : rawImages;
+
   const mediaItems: { type: "image" | "video"; src: string }[] = [
-    ...images.map((src) => ({ type: "image" as const, src })),
+    ...imagesWithThumbnail.map((src) => ({ type: "image" as const, src })),
     ...(product.video ? [{ type: "video" as const, src: product.video }] : []),
   ];
+
   const currentPrice = resolvePrice(product, selectedVariant, selectedSize);
 
   useEffect(() => {
@@ -80,15 +100,34 @@ function ProductPage() {
       .catch(() => {});
   }, [product._id]);
 
+  const descriptionLines = product.description?.split("\n").filter(Boolean) ?? [];
+
+const specLines = descriptionLines.filter((line) => {
+  const idx = line.indexOf(":");
+  return idx > 0 && idx < 45;
+});
+
+const paragraphLines = descriptionLines.filter((line) => {
+  const idx = line.indexOf(":");
+  return !(idx > 0 && idx < 45);
+});
+
+const visibleSpecs = expanded ? specLines : specLines.slice(0, 4);
+const visibleParagraphs = expanded ? paragraphLines : paragraphLines.slice(0, 2);
+
+const hasMore = specLines.length > 4 || paragraphLines.length > 2;
+
   return (
     <>
       <div className="mx-auto max-w-[1600px] px-6 pt-24 lg:px-12 lg:pt-32">
-        <nav className="text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground flex items-center flex-wrap gap-y-1">
-          <Link to="/" className="hover:text-foreground shrink-0">Beranda</Link>
-          <span className="mx-3 shrink-0">/</span>
-          <Link to="/shop" search={{ q: undefined }} className="hover:text-foreground shrink-0">Katalog</Link>
-          <span className="mx-3 shrink-0">/</span>
-          <span className="text-foreground truncate min-w-0">{product.name}</span>
+        {/* Breadcrumb */}
+        <nav className="text-[0.72rem] tracking-[0.24em] uppercase text-foreground/50 flex items-center flex-wrap gap-y-1">
+          <Link to="/" className="hover:text-foreground transition-colors shrink-0">Beranda</Link>
+          <span className="mx-3 shrink-0 text-foreground/30">/</span>
+          <Link to="/shop" search={{ q: undefined }} className="hover:text-foreground transition-colors shrink-0">Katalog</Link>
+          <span className="mx-3 shrink-0 text-foreground/30">/</span>
+          {/* FIX #1: Breadcrumb terakhir lebih visible */}
+          <span className="text-foreground/80 truncate min-w-0 font-medium">{product.name}</span>
         </nav>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-20">
@@ -197,82 +236,166 @@ function ProductPage() {
             </div>
           </div>
 
-          {/* Info */}
+          {/* Info panel */}
           <div className="lg:sticky lg:top-32 lg:self-start min-w-0">
-            <div className="eyebrow break-words">{product.category?.name}</div>
-            <h1 className="mt-4 font-serif text-3xl leading-[1.05] md:text-5xl break-words">{product.name}</h1>
-            <div className="mt-6 text-lg tabular-nums">
-              Rp{currentPrice.toLocaleString("id-ID")}
-            </div>
-            <div className="mt-8">
-              <dl className="divide-y hairline border-t border-b hairline">
-                {product.description?.split("\n").filter(Boolean).slice(0, expanded ? undefined : 6).map((line, i) => {
-                  const colonIdx = line.indexOf(":");
-                  if (colonIdx > 0 && colonIdx < 45) {
-                    return (
-                      <div key={i} className="flex justify-between gap-6 py-3">
-                        <dt className="text-[0.82rem] text-muted-foreground shrink-0">{line.slice(0, colonIdx).trim()}</dt>
-                        <dd className="text-[0.82rem] text-right">{line.slice(colonIdx + 1).trim()}</dd>
-                      </div>
-                    );
-                  }
-                  return <p key={i} className="py-2 text-[0.98rem] leading-[1.85] text-foreground/80">{line}</p>;
-                })}
-              </dl>
-              {(product.description?.split("\n").filter(Boolean).length ?? 0) > 6 && (
-                <button
-                  onClick={() => setExpanded(!expanded)}
-                  className="mt-3 text-[0.78rem] tracking-[0.2em] uppercase border-b hairline pb-0.5 hover:border-foreground transition-colors"
-                >
-                  {expanded ? "Sembunyikan" : "Lihat Selengkapnya"}
-                </button>
-              )}
+
+            {/* FIX #1: Category eyebrow lebih visible */}
+            <div className="eyebrow text-foreground/60 tracking-[0.2em]">{product.category?.name}</div>
+
+            {/* FIX #5: Nama produk scale lebih kecil — dari text-3xl/5xl jadi text-2xl/[2.6rem] */}
+            <h1 className="mt-3 font-serif text-2xl leading-[1.1] md:text-[2.6rem] break-words">{product.name}</h1>
+
+            {/* FIX #2: Harga lebih bold dan sedikit lebih besar */}
+            <div className="mt-5 text-2xl font-semibold tabular-nums tracking-tight">
+              Rp {currentPrice.toLocaleString("id-ID")}
             </div>
 
+            {/* Product Specifications */}
+{/* Product Specifications */}
+<div className="mt-8 space-y-6">
+
+  {visibleSpecs.length > 0 && (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {visibleSpecs.map((line, i) => {
+        const colonIdx = line.indexOf(":");
+
+        return (
+          <div
+            key={i}
+            className="
+              rounded-sm
+              border border-foreground/10
+              bg-foreground/[0.025]
+              px-5 py-4
+              transition-all
+              hover:border-foreground/25
+              hover:bg-foreground/[0.04]
+            "
+          >
+            <div
+              className="
+                text-[0.65rem]
+                uppercase
+                tracking-[0.18em]
+                text-foreground/45
+                mb-2
+              "
+            >
+              {line.slice(0, colonIdx).trim()}
+            </div>
+
+            <div
+              className="
+                text-[0.9rem]
+                leading-relaxed
+                font-medium
+                text-foreground
+              "
+            >
+              {line.slice(colonIdx + 1).trim()}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+
+  {visibleParagraphs.length > 0 && (
+    <div className="space-y-2 pt-2">
+      {visibleParagraphs.map((line, i) => (
+        <p
+          key={i}
+          className="
+            text-[0.92rem]
+            leading-[1.9]
+            text-foreground/70
+          "
+        >
+          {line}
+        </p>
+      ))}
+    </div>
+  )}
+
+  {hasMore && (
+    <button
+      onClick={() => setExpanded(!expanded)}
+      className="
+        mt-4
+        text-[0.75rem]
+        tracking-[0.18em]
+        uppercase
+        text-foreground/50
+        border-b border-foreground/20
+        pb-0.5
+        hover:text-foreground
+        hover:border-foreground
+        transition-colors
+      "
+    >
+      {expanded ? "Sembunyikan" : "Lihat Selengkapnya"}
+    </button>
+  )}
+
+</div>
+
+            {/* FIX #4: Varian — visual lebih premium */}
             {variants.length > 0 && (
               <div className="mt-10">
                 <div className="mb-4 flex items-baseline justify-between">
-                  <div className="eyebrow">Varian</div>
-                  <div className="text-xs text-muted-foreground truncate max-w-[60%] text-right">{selectedVariant}</div>
+                  <div className="eyebrow text-foreground/60">Varian</div>
+                  <div className="text-[0.78rem] text-foreground/50 truncate max-w-[60%] text-right">{selectedVariant}</div>
                 </div>
-                <div className={variants.some(v => v.thumbnail) ? "grid grid-cols-2 gap-2 sm:grid-cols-4" : "flex flex-wrap gap-2"}>
+                <div className={variants.some((v: Variant) => v.thumbnail) ? "grid grid-cols-2 gap-2 sm:grid-cols-4" : "flex flex-wrap gap-2"}>
                   {variants.map((v: Variant) => {
                     const active = selectedVariant === v.name;
                     return v.thumbnail ? (
+                      // Variant dengan gambar — subtle hover scale + ring premium
                       <button
                         key={v.name}
                         onClick={() => setSelectedVariant(v.name)}
                         className={
-                          "group flex flex-col overflow-hidden border text-left transition-all " +
+                          "group flex flex-col overflow-hidden text-left transition-all duration-200 " +
                           (active
-                            ? "border-foreground shadow-[0_0_0_1px_hsl(var(--foreground))]"
-                            : "hairline hover:border-foreground/60")
+                            ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
+                            : "ring-1 ring-foreground/15 hover:ring-foreground/40")
                         }
                       >
                         <div className="relative aspect-square w-full bg-surface overflow-hidden">
-                          <SmartImage src={v.thumbnail} alt={v.name} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                          <SmartImage
+                            src={v.thumbnail}
+                            alt={v.name}
+                            className={"absolute inset-0 h-full w-full object-cover transition-transform duration-300 " + (active ? "" : "group-hover:scale-[1.03]")}
+                            loading="lazy"
+                          />
+                          {active && (
+                            <div className="absolute inset-0 bg-foreground/5" />
+                          )}
                         </div>
-                        <div className="px-2 py-2">
-                          <div className="truncate text-[0.72rem] font-medium tracking-wide">{v.name}</div>
+                        <div className="px-2.5 py-2 border-t border-foreground/10">
+                          <div className={"truncate text-[0.72rem] font-medium tracking-wide " + (active ? "text-foreground" : "text-foreground/60")}>
+                            {v.name}
+                          </div>
                           {v.sku && (
-                            <div className="mt-0.5 truncate text-[0.65rem] text-muted-foreground">{v.sku}</div>
+                            <div className="mt-0.5 truncate text-[0.65rem] text-foreground/30">{v.sku}</div>
                           )}
                         </div>
                       </button>
                     ) : (
+                      // Variant tanpa gambar — pill/chip style lebih halus
                       <button
                         key={v.name}
                         onClick={() => setSelectedVariant(v.name)}
                         className={
-                          "border px-5 py-3 text-left transition-all text-sm " +
+                          "relative px-4 py-2.5 text-left transition-all duration-150 text-sm overflow-hidden " +
                           (active
-                            ? "border-foreground bg-foreground text-background"
-                            : "hairline hover:border-foreground text-foreground")
+                            ? "bg-foreground text-background"
+                            : "border border-foreground/15 text-foreground hover:border-foreground/50 hover:bg-foreground/[0.03]")
                         }
                       >
-                        <div className="font-medium">{v.name}</div>
+                        <div className="font-medium text-[0.82rem]">{v.name}</div>
                         {v.sku && (
-                          <div className={"mt-0.5 text-[0.65rem] tracking-wide " + (active ? "text-background/70" : "text-muted-foreground")}>
+                          <div className={"mt-0.5 text-[0.63rem] tracking-wide " + (active ? "text-background/60" : "text-foreground/30")}>
                             {v.sku}
                           </div>
                         )}
@@ -283,13 +406,14 @@ function ProductPage() {
               </div>
             )}
 
+            {/* FIX #4: Ukuran — lebih premium, pakai pill gaya editorial */}
             {sizes.length > 0 && (
               <div className="mt-8">
                 <div className="mb-4 flex items-baseline justify-between">
-                  <div className="eyebrow">Ukuran</div>
-                  <div className="text-xs text-muted-foreground">{selectedSize}</div>
+                  <div className="eyebrow text-foreground/60">Ukuran</div>
+                  <div className="text-[0.78rem] text-foreground/50">{selectedSize}</div>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-wrap gap-2">
                   {sizes.map((s: Size) => {
                     const active = selectedSize === s.name;
                     return (
@@ -297,16 +421,16 @@ function ProductPage() {
                         key={s.name}
                         onClick={() => setSelectedSize(s.name)}
                         className={
-                          "flex flex-col items-center border px-2 py-3 transition-colors " +
+                          "relative px-5 py-2.5 text-[0.82rem] font-medium tracking-wide transition-all duration-150 " +
                           (active
-                            ? "border-foreground bg-foreground text-background"
-                            : "hairline hover:border-foreground")
+                            ? "bg-foreground text-background"
+                            : "border border-foreground/15 text-foreground/70 hover:border-foreground/50 hover:text-foreground hover:bg-foreground/[0.03]")
                         }
                       >
-                        <span className="text-sm font-medium tabular-nums">{s.name}</span>
-                        <span className={"mt-0.5 text-[0.65rem] tracking-wide " + (active ? "text-background/70" : "text-muted-foreground")}>
-                          {s.sku}
-                        </span>
+                        {s.name}
+                        {active && (
+                          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-3 h-[1.5px] bg-background/40 rounded-full" />
+                        )}
                       </button>
                     );
                   })}
@@ -314,13 +438,14 @@ function ProductPage() {
               </div>
             )}
 
+            {/* Qty + CTA */}
             <div className="mt-10 flex items-stretch gap-3">
-              <div className="flex items-center border hairline">
-                <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Kurangi" className="px-4 py-4">
+              <div className="flex items-center border border-foreground/20">
+                <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Kurangi" className="px-4 py-4 hover:bg-foreground/5 transition-colors">
                   <Minus className="h-4 w-4" />
                 </button>
                 <span className="w-8 text-center text-sm tabular-nums">{qty}</span>
-                <button onClick={() => setQty(qty + 1)} aria-label="Tambah" className="px-4 py-4">
+                <button onClick={() => setQty(qty + 1)} aria-label="Tambah" className="px-4 py-4 hover:bg-foreground/5 transition-colors">
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
@@ -335,18 +460,19 @@ function ProductPage() {
               </button>
             </div>
 
-            <dl className="mt-10 space-y-4 border-t hairline pt-8 text-sm">
+            {/* Meta info */}
+            <dl className="mt-10 space-y-3 border-t border-foreground/10 pt-7 text-sm">
               <div className="flex justify-between gap-6">
-                <dt className="text-muted-foreground">Kategori</dt>
-                <dd className="text-right">{product.category?.name}</dd>
+                <dt className="text-foreground/40 text-[0.8rem] uppercase tracking-[0.08em]">Kategori</dt>
+                <dd className="text-right text-foreground/80 text-[0.88rem]">{product.category?.name}</dd>
               </div>
               <div className="flex justify-between gap-6">
-                <dt className="text-muted-foreground">Dibuat di</dt>
-                <dd className="text-right">Indonesia, Bogor</dd>
+                <dt className="text-foreground/40 text-[0.8rem] uppercase tracking-[0.08em]">Dibuat di</dt>
+                <dd className="text-right text-foreground/80 text-[0.88rem]">Indonesia, Bogor</dd>
               </div>
               <div className="flex justify-between gap-6">
-                <dt className="text-muted-foreground">Waktu produksi</dt>
-                <dd className="text-right">6 — 8 minggu</dd>
+                <dt className="text-foreground/40 text-[0.8rem] uppercase tracking-[0.08em]">Waktu produksi</dt>
+                <dd className="text-right text-foreground/80 text-[0.88rem]">6 — 8 minggu</dd>
               </div>
             </dl>
           </div>
@@ -354,20 +480,167 @@ function ProductPage() {
       </div>
 
       {related.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-6 py-16 lg:px-12">
-          <div className="mb-14 flex items-end justify-between">
-            <h2 className="font-serif text-3xl md:text-4xl">Pertimbangan Lain</h2>
-            <Link to="/shop" search={{ q: undefined }} className="border-b hairline pb-1 text-[0.78rem] tracking-[0.24em] uppercase hover:border-foreground">
-              Lihat Semua
-            </Link>
+  <section className="border-t hairline">
+    <div className="mx-auto max-w-[1600px] px-6 py-20 lg:px-12">
+
+      <div className="mb-16 flex items-end justify-between">
+        <div>
+          <div className="eyebrow">
+            — Explore
           </div>
-          <div className="grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((p) => (
-              <ProductCard key={p._id} product={p} />
-            ))}
-          </div>
-        </section>
-      )}
+
+          <h2 className="mt-4 font-serif text-4xl md:text-5xl">
+            Koleksi Lain
+          </h2>
+        </div>
+
+        <Link
+          to="/shop"
+          search={{ q: undefined }}
+          className="
+            hidden
+            border-b
+            hairline
+            pb-1
+            text-[0.75rem]
+            uppercase
+            tracking-[0.25em]
+            transition-colors
+            hover:border-foreground
+            sm:block
+          "
+        >
+          Lihat Semua
+        </Link>
+      </div>
+
+
+      <div className="
+        grid
+        gap-x-8
+        gap-y-14
+        sm:grid-cols-2
+        lg:grid-cols-3
+      ">
+        {related.map((p) => (
+          <Link
+            key={p._id}
+            to="/products/$slug"
+            params={{ slug: p.slug }}
+            className="group"
+          >
+
+            <div className="
+              relative
+              aspect-[5/5]
+              overflow-hidden
+              bg-surface
+            ">
+              <SmartImage
+                src={p.thumbnail}
+                alt={p.name}
+                className="
+                  absolute
+                  inset-0
+                  h-full
+                  w-full
+                  object-cover
+                  transition-transform
+                  duration-[1400ms]
+                  group-hover:scale-[1.04]
+                "
+              />
+
+              <div
+                className="
+                  absolute
+                  inset-0
+                  bg-black/0
+                  transition-colors
+                  duration-500
+                  group-hover:bg-black/5
+                "
+              />
+            </div>
+
+
+            <div className="mt-6">
+
+              <div className="
+                text-[10px]
+                uppercase
+                tracking-[0.25em]
+                text-foreground/40
+              ">
+                {p.category.name}
+              </div>
+
+
+              <h3 className="
+                mt-3
+                font-serif
+                text-2xl
+                leading-tight
+                transition-colors
+                group-hover:text-foreground/70
+              ">
+                {p.name}
+              </h3>
+
+
+              <div className="
+                mt-3
+                text-sm
+                tabular-nums
+                text-foreground/70
+              ">
+                Rp {currentPrice.toLocaleString("id-ID")}
+              </div>
+
+            </div>
+
+          </Link>
+        ))}
+      </div>
+
+    </div>
+  </section>
+)}
     </>
   );
 }
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * PANDUAN FORMAT DESKRIPSI PRODUK (untuk dashboard admin)
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Deskripsi produk dibaca baris per baris (dipisahkan newline "\n").
+ * Baris yang mengandung ":" di posisi < 45 karakter pertama akan ditampilkan
+ * sebagai baris tabel dua kolom (label : nilai).
+ * Baris tanpa ":" akan ditampilkan sebagai paragraf biasa.
+ *
+ * CONTOH FORMAT IDEAL:
+ * ──────────────────────────────────────────────────────────────────
+ * Material Rangka: Kayu Mahoni Solid Grade A
+ * Material Pelapis: Fabric Linen Premium Anti-Noda
+ * Kaki: Stainless Steel Hitam Doff
+ * Feel: Medium Firm
+ * Sistem Kasur: Rebounded Foam + Soft Foam Layer
+ * Fitur: Sorong / Trundle Bed
+ * Garansi Rangka: 5 Tahun
+ * Garansi Busa: 2 Tahun
+ *
+ * Kasur Richmond dirancang untuk kamar yang membutuhkan
+ * fleksibilitas. Sistem sorong memungkinkan satu unit berfungsi
+ * sebagai dua tempat tidur terpisah — ideal untuk kamar anak
+ * atau ruang tamu serbaguna.
+ * ──────────────────────────────────────────────────────────────────
+ *
+ * TIPS:
+ * - Tulis spesifikasi teknis dulu (baris tabel), baru narasi di bawah
+ * - Label singkat, max ~40 karakter sebelum titik dua
+ * - Nilai di kanan boleh panjang, akan wrap otomatis
+ * - Pisahkan blok tabel dan paragraf dengan baris kosong jika perlu
+ * - Hindari simbol aneh atau markdown (bold, *, #) — tidak akan render
+ */

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import type { Product } from "@/lib/cart";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -13,6 +14,42 @@ export const Route = createFileRoute("/cart")({
   component: CartPage,
 });
 
+function resolvePrice(product: Product, color: string, size: string): number {
+  if (!product.variants?.length) {
+    return product.price ?? 0;
+  }
+
+  const variant = product.variants.find(
+    (v) => v.name === color
+  );
+
+  if (!variant) return 0;
+
+  if (!variant.sizes?.length) {
+    return product.price ?? 0;
+  }
+
+  const selectedSize = variant.sizes.find(
+    (s) => s.name === size
+  );
+
+  return selectedSize?.price ?? 0;
+}
+
+function resolveThumbnail(product: Product, color: string): string {
+  if (product.variants?.length) {
+    const variant = product.variants.find(
+      (v) => v.name === color
+    );
+
+    if (variant?.thumbnail) {
+      return variant.thumbnail;
+    }
+  }
+
+  return product.thumbnail || product.images?.[0] || "";
+}
+
 function CartPage() {
   const { resolved, subtotal, update, remove, loading } = useCart();
   const total = subtotal;
@@ -23,7 +60,7 @@ function CartPage() {
         <div className="eyebrow">Langkah 01 · Keranjang</div>
         <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-5xl md:text-6xl">Keranjang Anda</h1>
         <p className="mt-6 text-[0.98rem] leading-[1.85] text-foreground/70">
-          Sejenak untuk mempertimbangkan sebelum pembayaran. Setiap karya dibuat sesuai pesanan dalam batch kecil.
+          Sejenak untuk mempertimbangkan sebelum pembayaran. Setiap produk dibuat sesuai pesanan batch kecil.
         </p>
       </div>
 
@@ -46,13 +83,32 @@ function CartPage() {
             {resolved.map((item, i) => (
               <li
                 key={`${item.id}-${item.size}-${item.color}`}
-                className="grid grid-cols-[96px_1fr] gap-4 border-b hairline py-6 sm:grid-cols-[140px_1fr] sm:gap-6 lg:grid-cols-[160px_1fr_auto] lg:gap-8 lg:py-8"
+                className="
+  group
+  grid
+  grid-cols-[96px_1fr]
+  gap-4
+  border-b
+  hairline
+  py-6
+  pr-2
+  transition-colors
+  hover:bg-foreground/[0.015]
+  sm:grid-cols-[140px_1fr]
+  sm:gap-6
+  sm:pr-4
+  lg:grid-cols-[160px_1fr_auto]
+  lg:gap-8
+  lg:py-8
+  lg:pr-6
+"
               >
                 <Link to="/products/$slug" params={{ slug: item.product.slug }} className="block aspect-[4/5] bg-surface">
                   <img
-                    src={item.product.thumbnail || item.product.images?.[0]}
-                    alt={item.product.name}
-                    className="h-full w-full object-cover"
+                    src={resolveThumbnail(item.product, item.color)}
+  alt={item.product.name}
+  className="h-full w-full object-cover"
+
                   />
                 </Link>
 
@@ -71,39 +127,102 @@ function CartPage() {
                       {item.size && item.color && <span> · </span>}
                       {item.color && <span>{item.color}</span>}
                     </div>
-                    <div className="mt-3 text-right tabular-nums lg:hidden">
-                      Rp{(item.product.minPrice * item.qty).toLocaleString("id-ID")}
-                    </div>
+                    
+                    <div className="hidden mt-2 tabular-nums lg:block">
+                  Rp {(resolvePrice(item.product, item.color, item.size) * item.qty).toLocaleString("id-ID")}
+                </div>
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <div className="flex items-center border hairline">
-                      <button onClick={() => update(i, item.qty - 1)} aria-label="Decrease" className="px-3 py-2">
-                        <Minus className="h-3.5 w-3.5" />
-                      </button>
-                      <span className="w-8 text-center text-sm tabular-nums">{item.qty}</span>
-                      <button onClick={() => update(i, item.qty + 1)} aria-label="Increase" className="px-3 py-2">
-                        <Plus className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                    <button
+                    <div className="
+  flex
+  items-center
+  border
+  border-foreground/15
+  h-10
+">
+  <button
+    onClick={() => update(i, item.qty - 1)}
+    aria-label="Decrease"
+    className="
+      h-full
+      px-3
+      text-foreground/50
+      hover:text-foreground
+      hover:bg-foreground/[0.04]
+      transition-colors
+    "
+  >
+    <Minus className="h-3.5 w-3.5" />
+  </button>
+
+  <span className="
+    w-10
+    text-center
+    text-sm
+    tabular-nums
+    font-medium
+  ">
+    {item.qty}
+  </span>
+
+  
+
+  <button
+    onClick={() => update(i, item.qty + 1)}
+    aria-label="Increase"
+    className="
+      h-full
+      px-3
+      text-foreground/50
+      hover:text-foreground
+      hover:bg-foreground/[0.04]
+      transition-colors
+    "
+  >
+    <Plus className="h-3.5 w-3.5" />
+  </button>
+</div>
+  <button
   onClick={() => remove(i)}
-  className="inline-flex items-center gap-1 border border-red-300 px-3 py-1.5 text-[0.72rem] tracking-[0.2em] uppercase text-red-400 hover:border-red-500 hover:text-red-600 transition-colors"
+  className="
+    inline-flex
+    h-10
+    items-center
+    gap-2
+    border
+    border-foreground/15
+    px-4
+    text-[0.72rem]
+    tracking-[0.18em]
+    uppercase
+    text-foreground/60
+    transition-all
+    hover:border-foreground/40
+    hover:text-foreground
+    hover:bg-foreground/[0.03]
+  "
 >
-  <X className="h-3 w-3" /> Hapus
+  <X className="h-3.5 w-3.5" />
+  Hapus
 </button>
                   </div>
                 </div>
 
-                <div className="hidden text-right tabular-nums lg:block">
-                  Rp{(item.product.minPrice * item.qty).toLocaleString("id-ID")}
-                </div>
+                
               </li>
             ))}
           </ul>
 
           <aside className="lg:sticky lg:top-32 lg:self-start">
-            <div className="border hairline p-6 sm:p-8">
+            <div className="
+  border
+  border-foreground/10
+  bg-background
+  p-6
+  shadow-[0_20px_60px_rgba(0,0,0,0.04)]
+  sm:p-8
+">
               <div className="eyebrow">Ringkasan</div>
               <dl className="mt-6 space-y-4 text-sm">
                 <div className="flex justify-between">
@@ -113,10 +232,6 @@ function CartPage() {
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Pengiriman white-glove</dt>
                   <dd>Gratis</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Pajak</dt>
-                  <dd>Dihitung saat pembayaran</dd>
                 </div>
               </dl>
               <div className="mt-6 flex justify-between border-t hairline pt-6 text-base">

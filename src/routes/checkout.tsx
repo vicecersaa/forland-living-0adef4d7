@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
+import { ongkirData, findOngkir } from "@/data/ongkir";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -40,11 +41,10 @@ function CheckoutPage() {
   const [isCOD, setIsCOD] = useState(false);
   const [shippingLabel, setShippingLabel] = useState<string | null>(null);
 
-  const [showPopup, setShowPopup] = useState(false);
+  const [isFromLink, setIsFromLink] = useState(false);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [pendingOrderNumber, setPendingOrderNumber] = useState<string | null>(null);
-
-  const [isFromLink, setIsFromLink] = useState(false);
+  const [showWAPopup, setShowWAPopup] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -57,15 +57,13 @@ function CheckoutPage() {
     notes: "",
   });
 
-  // Handle magic link dari admin
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get("order_id");
     const token = params.get("token");
-
     if (!orderId || !token) return;
 
-    fetch(`${import.meta.env.VITE_API_URL}/checkout/validate-token?order_id=${orderId}&token=${token}`)
+    fetch(`${import.meta.env.VITE_API_URL}/orders/validate-token?order_id=${orderId}&token=${token}`)
       .then(res => res.json())
       .then(data => {
         if (data?.data) {
@@ -82,11 +80,7 @@ function CheckoutPage() {
           });
           setShippingCost(order.shippingCost);
           setIsCOD(order.isCOD);
-          setShippingLabel(
-            order.isCOD
-              ? "COD"
-              : `Rp${order.shippingCost.toLocaleString("id-ID")}`
-          );
+          setShippingLabel(order.isCOD ? "COD" : `Rp${order.shippingCost.toLocaleString("id-ID")}`);
           setIsFromLink(true);
           setPendingOrderId(orderId);
         }
@@ -100,11 +94,6 @@ function CheckoutPage() {
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    if (e.target.name === "city") {
-      setShippingCost(0);
-      setShippingLabel(null);
-      setIsCOD(false);
-    }
   }
 
   async function applyCoupon() {
@@ -136,7 +125,6 @@ function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Dari magic link — langsung ke payment
       if (isFromLink && pendingOrderId) {
         const paymentRes = await fetch(`${import.meta.env.VITE_API_URL}/payment/${pendingOrderId}`, {
           method: "POST",
@@ -150,46 +138,9 @@ function CheckoutPage() {
         return;
       }
 
-      // Step 1: Cek ongkir dulu
-      const ongkirRes = await fetch(
-    `${import.meta.env.VITE_API_URL}/checkout/check-ongkir?city=${encodeURIComponent(form.city)}`
-);
-      const ongkirJson = await ongkirRes.json();
-      const ongkirFound = ongkirJson.data?.found;
-      const ongkirCost = ongkirJson.data?.cost ?? 0;
+      const ongkirResult = findOngkir(form.city);
+      const ongkirCost = ongkirResult?.cost ?? 0;
 
-      if (!ongkirFound) {
-        // Kota tidak ada — buat pending order
-        const pendingRes = await fetch(`${import.meta.env.VITE_API_URL}/checkout/pending-ongkir`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-        shippingAddress: {
-            name: form.name,
-            phone: form.phone,
-            province: form.province,
-            city: form.city,
-            district: form.district,
-            postalCode: form.postalCode,
-            address: form.address,
-        },
-        notes: form.notes,
-        coupon,
-        discount,
-    }),
-});
-        const pendingJson = await pendingRes.json();
-        if (!pendingRes.ok) throw new Error(pendingJson.message ?? "Gagal membuat pesanan");
-
-        setPendingOrderId(pendingJson.data._id);
-        setPendingOrderNumber(pendingJson.data.orderNumber);
-        setShowPopup(true);
-        setLoading(false);
-        return;
-      }
-
-      // Kota ketemu — checkout normal
       setShippingCost(ongkirCost);
       setShippingLabel(`Rp${ongkirCost.toLocaleString("id-ID")}`);
 
@@ -234,18 +185,6 @@ function CheckoutPage() {
     }
   }
 
-  function handleOngkirSettled(data: { isCOD: boolean; shippingCost: number; total: number }) {
-    setShowPopup(false);
-    if (data.isCOD) {
-      setIsCOD(true);
-      setShippingCost(0);
-      setShippingLabel("COD");
-    } else {
-      setShippingCost(data.shippingCost);
-      setShippingLabel(`Rp${data.shippingCost.toLocaleString("id-ID")}`);
-    }
-  }
-
   if (resolved.length === 0 && !isFromLink) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-12 text-center">
@@ -261,15 +200,34 @@ function CheckoutPage() {
     );
   }
 
+  const waMessage = `Halo Forland Living! 👋\n\nSaya ingin bertanya tentang ongkos kirim ke kota saya yang belum tersedia.\n\n*No. Pesanan: ${pendingOrderNumber || "-"}*\nNama: ${form.name || "-"}\nNo. HP: ${form.phone || "-"}\nAlamat: ${form.address || "-"}, ${form.district || "-"}, ${form.province || "-"}\n\nProduk:\n${resolved.map(i => `- ${i.product.name} x${i.qty}`).join("\n")}\n\nMohon bantuannya, terima kasih!`;
+  const waUrl = `https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(waMessage)}`;
+
   return (
     <div className="mx-auto max-w-[1600px] px-6 pt-24 pb-16 lg:px-12 lg:pt-40">
 
-      {showPopup && pendingOrderId && pendingOrderNumber && (
-        <OngkirPopup
-          orderId={pendingOrderId}
-          orderNumber={pendingOrderNumber}
-          onOngkirSettled={handleOngkirSettled}
-        />
+      {showWAPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="w-full max-w-md border hairline bg-background p-10">
+            <div className="eyebrow mb-6">Informasi Pengiriman</div>
+            <h2 className="font-serif text-3xl leading-[1.1]">
+              Kota Anda belum tersedia di layanan pengiriman kami.
+            </h2>
+            <div className="mt-8 border-t hairline pt-8">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Hubungi admin kami melalui WhatsApp untuk mengetahui biaya pengiriman ke kota Anda. Admin akan membantu proses pemesanan Anda.
+              </p>
+            </div>
+            
+             <a href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-10 block w-full bg-foreground py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90 transition-opacity"
+            >
+              Chat Admin via WhatsApp
+            </a>
+          </div>
+        </div>
       )}
 
       <div className="max-w-2xl">
@@ -287,9 +245,53 @@ function CheckoutPage() {
 
           <Section title="Alamat Pengiriman">
             <Field label="Alamat Lengkap" name="address" value={form.address} onChange={handleChange} required disabled={isFromLink} />
-            <div className="grid gap-6 sm:grid-cols-2">
-              <Field label="Kecamatan" name="district" value={form.district} onChange={handleChange} required disabled={isFromLink} />
-              <Field label="Kota" name="city" value={form.city} onChange={handleChange} required disabled={isFromLink} />
+            <div className="grid gap-6 sm:grid-cols-2 relative">
+  <Field label="Kecamatan" name="district" value={form.district} onChange={handleChange} required disabled={isFromLink} />
+  <CitySelect
+                value={form.city}
+                onChange={(city) => {
+                  setForm(prev => ({ ...prev, city }));
+                  setShippingCost(0);
+                  setShippingLabel(null);
+                  setIsCOD(false);
+                }}
+                disabled={isFromLink}
+                onNotFound={async () => {
+  try {
+    const pendingRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/pending-ongkir`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shippingAddress: {
+          name: form.name,
+          phone: form.phone,
+          province: form.province,
+          city: form.city || "Belum dipilih",
+          district: form.district,
+          postalCode: form.postalCode,
+          address: form.address,
+        },
+        notes: form.notes,
+        items: resolved.map(i => ({
+          product: i.id,
+          variant: i.color,
+          size: i.size,
+          quantity: i.qty,
+        })),
+      }),
+    });
+    const pendingJson = await pendingRes.json();
+    if (pendingJson?.data?.orderNumber) {
+      setPendingOrderNumber(pendingJson.data.orderNumber);
+      setPendingOrderId(pendingJson.data._id);
+    }
+  } catch {
+    // silent fail
+  }
+  setShowWAPopup(true);
+}}
+              />
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
               <Field label="Provinsi" name="province" value={form.province} onChange={handleChange} required disabled={isFromLink} />
@@ -317,7 +319,6 @@ function CheckoutPage() {
           <div className="border hairline p-8">
             <div className="eyebrow">Pesanan</div>
 
-            {/* Voucher */}
             <div className="mt-8 border-t hairline pt-6">
               <div className="eyebrow mb-4">Kode Voucher</div>
               <div className="flex gap-3">
@@ -350,16 +351,11 @@ function CheckoutPage() {
               )}
             </div>
 
-            {/* Items */}
             <ul className="mt-6 space-y-5">
               {resolved.map((item) => (
                 <li key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
                   <div className="h-20 w-16 flex-shrink-0 bg-surface">
-                    <img
-                      src={item.product.thumbnail || item.product.images?.[0]}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
+                    <img src={item.product.thumbnail || item.product.images?.[0]} alt="" className="h-full w-full object-cover" />
                   </div>
                   <div className="flex flex-1 flex-col justify-between text-sm">
                     <div>
@@ -368,7 +364,7 @@ function CheckoutPage() {
                         {item.size && <span>{item.size}</span>}
                         {item.size && item.color && <span> · </span>}
                         {item.color && <span>{item.color}</span>}
-                        <span> · ×{item.qty}</span>
+                        <span> · x{item.qty}</span>
                       </div>
                     </div>
                   </div>
@@ -379,7 +375,6 @@ function CheckoutPage() {
               ))}
             </ul>
 
-            {/* Summary */}
             <dl className="mt-8 space-y-3 border-t hairline pt-6 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
@@ -388,11 +383,13 @@ function CheckoutPage() {
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Pengiriman</dt>
                 <dd className="tabular-nums">
-                  {shippingLabel === null
-                    ? <span className="text-muted-foreground italic text-xs">Dihitung saat checkout</span>
-                    : shippingLabel === "COD"
-                    ? "COD (bayar di tempat)"
-                    : shippingLabel}
+                  {shippingLabel === null ? (
+                    <span className="text-muted-foreground italic text-xs">Dihitung saat checkout</span>
+                  ) : shippingLabel === "COD" ? (
+                    "COD (bayar di tempat)"
+                  ) : (
+                    shippingLabel
+                  )}
                 </dd>
               </div>
               {discount > 0 && (
@@ -417,18 +414,11 @@ function CheckoutPage() {
               disabled={loading}
               className="mt-8 block w-full bg-foreground py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90 disabled:opacity-50"
             >
-              {loading
-                ? "Memproses..."
-                : isFromLink
-                ? "Lanjutkan Pembayaran →"
-                : "Buat Pesanan →"}
+              {loading ? "Memproses..." : isFromLink ? "Lanjutkan Pembayaran" : "Buat Pesanan"}
             </button>
 
-            <Link
-              to="/cart"
-              className="mt-3 block text-center text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground hover:text-foreground"
-            >
-              ← Kembali ke Keranjang
+            <Link to="/cart" className="mt-3 block text-center text-[0.72rem] tracking-[0.24em] uppercase text-muted-foreground hover:text-foreground">
+              Kembali ke Keranjang
             </Link>
           </div>
         </aside>
@@ -438,70 +428,76 @@ function CheckoutPage() {
 }
 
 // ========================
-// Popup Ongkir
+// City Select
 // ========================
-function OngkirPopup({
-  orderId,
-  orderNumber,
-  onOngkirSettled,
+function CitySelect({
+  value,
+  onChange,
+  disabled,
+  onNotFound,
 }: {
-  orderId: string;
-  orderNumber: string;
-  onOngkirSettled: (data: { isCOD: boolean; shippingCost: number; total: number }) => void;
+  value: string;
+  onChange: (city: string) => void;
+  disabled?: boolean;
+  onNotFound: () => void;
 }) {
-  const waMessage = `Halo Forland Living! 👋\n\nSaya ingin konfirmasi ongkos kirim untuk pesanan saya.\n\n*No. Pesanan: ${orderNumber}*\n\nMohon bantuannya, terima kasih!`;
-  const waUrl = `https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(waMessage)}`;
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  const selected = ongkirData.find(item => item.city === value);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/checkout/${orderId}/ongkir-status`);
-        const data = await res.json();
-        if (data?.data?.settled) {
-          clearInterval(interval);
-          onOngkirSettled(data.data);
-        }
-      } catch {
-        // silent fail
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
       }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [orderId]);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <div className="w-full max-w-md border hairline bg-background p-10">
+    <div ref={ref} className="block">
+      <span className="eyebrow block">Kota</span>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => !disabled && setOpen(prev => !prev)}
+        className="mt-2 w-full border-b hairline bg-transparent py-3 text-left text-[0.95rem] outline-none transition-colors focus:border-foreground disabled:opacity-40 disabled:cursor-not-allowed flex justify-between items-center"
+      >
+        <span className={value ? "text-foreground" : "text-muted-foreground"}>
+          {selected ? selected.city : "Pilih kota tujuan..."}
+        </span>
+        <span className="text-muted-foreground text-xs ml-2">{open ? "▲" : "▼"}</span>
+      </button>
 
-        <div className="eyebrow mb-6">Informasi Pengiriman</div>
-
-        <h2 className="font-serif text-3xl leading-[1.1]">
-          Kota Anda belum tersedia di layanan pengiriman kami.
-        </h2>
-
-        <div className="mt-8 border-t hairline pt-8">
-          <p className="eyebrow mb-2">Nomor Pesanan</p>
-          <p className="font-serif text-2xl">{orderNumber}</p>
-
-          <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-            Pesanan Anda telah kami catat. Hubungi admin kami melalui WhatsApp untuk konfirmasi ongkos kirim — admin akan mengirimkan link pembayaran setelah ongkir dikonfirmasi.
-          </p>
-
-          <div className="mt-6 flex items-center gap-3 text-xs tracking-[0.16em] uppercase text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-            Menunggu konfirmasi admin
-          </div>
+      {open && (
+        <div className="absolute z-40 mt-1 w-full max-h-64 overflow-y-auto border hairline bg-background shadow-sm">
+          {ongkirData.map((item) => (
+            <button
+              key={item.city}
+              type="button"
+              onClick={() => {
+                onChange(item.city);
+                setOpen(false);
+              }}
+              className={`w-full px-4 py-3 text-left text-sm transition-colors hover:bg-foreground/5 ${value === item.city ? "bg-foreground/10 font-medium" : ""}`}
+            >
+              {item.city}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onNotFound();
+            }}
+            className="w-full border-t hairline px-4 py-3 text-left text-sm text-muted-foreground hover:bg-foreground/5 transition-colors"
+          >
+            Kota saya tidak ada di daftar
+          </button>
         </div>
-
-        
-         <a href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-10 block w-full bg-foreground py-4 text-center text-[0.78rem] tracking-[0.24em] uppercase text-background hover:opacity-90 transition-opacity"
-        >
-          Chat Admin via WhatsApp →
-        </a>
-
-      </div>
+      )}
     </div>
   );
 }

@@ -274,7 +274,7 @@ function CheckoutPage() {
       </div>
 
       <form onSubmit={onSubmit} className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24 overflow-hidden">
-        <div className="space-y-14">
+        <div className="space-y-14 min-w-0 overflow-hidden">
 
           <Section title="Informasi Penerima">
             <Field label="Nama Lengkap" name="name" value={form.name} onChange={handleChange} required disabled={isFromLink} />
@@ -283,7 +283,7 @@ function CheckoutPage() {
 
           <Section title="Alamat Pengiriman">
             <Field label="Alamat Lengkap" name="address" value={form.address} onChange={handleChange} required disabled={isFromLink} />
-            <div className="grid gap-6 sm:grid-cols-2 relative">
+            <div className="grid gap-6 sm:grid-cols-2 relative min-w-0 overflow-hidden">
               <Field label="Kecamatan" name="district" value={form.district} onChange={handleChange} required disabled={isFromLink} />
               {/* Fix #1 — ongkir update saat pilih kota */}
               <CitySelect
@@ -338,7 +338,7 @@ function CheckoutPage() {
                 }}
               />
             </div>
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-2 min-w-0">
               <Field label="Provinsi" name="province" value={form.province} onChange={handleChange} required disabled={isFromLink} />
               <Field label="Kode Pos" name="postalCode" value={form.postalCode} onChange={handleChange} required disabled={isFromLink} />
             </div>

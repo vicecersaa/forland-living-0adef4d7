@@ -270,7 +270,7 @@ function CheckoutPage() {
 
       <div className="max-w-2xl">
         <div className="eyebrow">Langkah 02 · Pembayaran</div>
-        <h1 className="mt-4 font-serif text-5xl leading-[1.05] md:text-6xl">Pembayaran</h1>
+        <h1 className="mt-4 font-serif text-4xl leading-[1.05] md:text-6xl">Pembayaran</h1>
       </div>
 
       <form onSubmit={onSubmit} className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24 overflow-hidden">
@@ -360,16 +360,15 @@ function CheckoutPage() {
           {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
 
-        <aside className="lg:sticky lg:top-32 lg:self-start">
-          <div
-  className="
+        <aside className="lg:sticky lg:top-32 lg:self-start min-w-0">
+  <div className="
     border
     border-foreground/10
     bg-background
-    p-8
+    p-5
+    sm:p-8
     shadow-[0_20px_60px_rgba(0,0,0,0.04)]
-  "
->
+  ">
             <div className="eyebrow">Pesanan</div>
 
             
@@ -404,23 +403,22 @@ function CheckoutPage() {
 
             <div className="mt-8 border-t hairline pt-6">
   <div className="eyebrow mb-4">Kode Voucher</div>
-  <div className="flex gap-3">
+  <div className="flex gap-2">
     <input
       value={coupon}
       onChange={(e) => setCoupon(e.target.value.toUpperCase())}
       placeholder="Masukkan kode voucher"
-      className="flex-1 border hairline bg-transparent px-4 py-3 text-sm outline-none transition-colors focus:border-foreground"
+      className="min-w-0 flex-1 border hairline bg-transparent px-3 py-3 text-sm outline-none transition-colors focus:border-foreground"
     />
     <button
       type="button"
       onClick={applyCoupon}
       disabled={couponLoading}
-      className="min-w-[120px] bg-foreground px-5 py-3 text-xs uppercase tracking-[0.2em] text-background transition hover:opacity-90 disabled:opacity-50"
+      className="shrink-0 bg-foreground px-4 py-3 text-xs uppercase tracking-[0.2em] text-background transition hover:opacity-90 disabled:opacity-50"
     >
       {couponLoading ? "..." : "Gunakan"}
     </button>
   </div>
-...
 </div>
 
             <dl className="mt-8 space-y-3 border-t hairline pt-6 text-sm">
@@ -598,9 +596,9 @@ function CitySelect({
 // ========================
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section>
+    <section className="w-full min-w-0 max-w-full">
       <h2 className="font-serif text-2xl">{title}</h2>
-      <div className="mt-6 space-y-6">{children}</div>
+      <div className="mt-6 space-y-6 w-full min-w-0">{children}</div>
     </section>
   );
 }
@@ -625,21 +623,10 @@ function Field({
   disabled?: boolean;
 }) {
   return (
-    <label className="group block">
-      <span
-        className="
-          block
-          text-[0.68rem]
-          uppercase
-          tracking-[0.18em]
-          text-foreground/45
-          transition-colors
-          group-focus-within:text-foreground
-        "
-      >
+    <label className="group block w-full min-w-0 max-w-full">
+      <span className="block text-[0.68rem] uppercase tracking-[0.18em] text-foreground/45 transition-colors group-focus-within:text-foreground">
         {label}
       </span>
-
       <input
         name={name}
         type={type}
@@ -648,24 +635,7 @@ function Field({
         value={value}
         onChange={onChange}
         disabled={disabled}
-        className="
-          mt-3
-          w-full
-          border-b
-          border-foreground/15
-          bg-foreground/[0.02]
-          px-3
-          py-3.5
-          text-[0.95rem]
-          text-foreground
-          outline-none
-          transition-all
-          placeholder:text-foreground/25
-          focus:border-foreground
-          focus:bg-foreground/[0.04]
-          disabled:cursor-not-allowed
-          disabled:opacity-40
-        "
+        className="mt-3 w-full max-w-full border-b border-foreground/15 bg-transparent px-3 py-3.5 text-[0.95rem] text-foreground outline-none transition-all placeholder:text-foreground/25 focus:border-foreground disabled:cursor-not-allowed disabled:opacity-40"
       />
     </label>
   );

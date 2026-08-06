@@ -44,12 +44,11 @@
 :root {
   --radius: 0.125rem;
 
-  /* Monochromatic quiet-luxury palette (Forland Living) */
-  --background: oklch(0.984 0.001 106);      /* Matte White #F8F8F6 */
-  --surface: oklch(0.973 0.002 250);         /* Soft White #F4F5F6 */
-  --foreground: oklch(0.185 0 0);            /* Matte Black #181818 */
+  --background: oklch(0.984 0.001 106);
+  --surface: oklch(0.973 0.002 250);
+  --foreground: oklch(0.185 0 0);
   --ink: oklch(0.185 0 0);
-  --ink-soft: oklch(0.32 0.003 250);         /* Charcoal #2B2F33 */
+  --ink-soft: oklch(0.32 0.003 250);
 
   --card: oklch(0.984 0.001 106);
   --card-foreground: oklch(0.185 0 0);
@@ -58,17 +57,17 @@
 
   --primary: oklch(0.185 0 0);
   --primary-foreground: oklch(0.984 0.001 106);
-  --secondary: oklch(0.918 0.002 250);       /* Silver Mist #E8EAED */
+  --secondary: oklch(0.918 0.002 250);
   --secondary-foreground: oklch(0.185 0 0);
   --muted: oklch(0.960 0.002 250);
-  --muted-foreground: oklch(0.48 0.006 250); /* Slate Gray */
+  --muted-foreground: oklch(0.48 0.006 250);
   --accent: oklch(0.918 0.002 250);
   --accent-foreground: oklch(0.185 0 0);
 
   --destructive: oklch(0.55 0.18 27);
   --destructive-foreground: oklch(0.984 0.001 106);
 
-  --hairline: oklch(0.895 0.002 250);        /* Light Silver #DDE1E6 */
+  --hairline: oklch(0.895 0.002 250);
   --border: oklch(0.895 0.002 250);
   --input: oklch(0.895 0.002 250);
   --ring: oklch(0.32 0.003 250);
@@ -101,11 +100,7 @@
 @layer base {
   * {
     border-color: var(--color-border);
-  }
-
-  @layer base {
-  * {
-    border-color: var(--color-border);
+    box-sizing: border-box;
   }
 
   body {
@@ -115,7 +110,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.005em;
-    overflow-x: hidden; /* tambah ini */
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, .font-serif {
@@ -180,6 +175,3 @@
   color: color-mix(in oklch, var(--foreground) 60%, transparent) !important;
   font-size: 0.72rem !important;
 }
-
-
-

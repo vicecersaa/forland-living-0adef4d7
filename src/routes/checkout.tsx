@@ -240,7 +240,7 @@ function CheckoutPage() {
   const waUrl = `https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <div className="mx-auto max-w-[1600px] px-6 pt-24 pb-16 lg:px-12 lg:pt-40">
+    <div className="mx-auto max-w-[1600px] px-4 pt-24 pb-16 sm:px-6 lg:px-12 lg:pt-40">
 
       {showWAPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
@@ -273,7 +273,7 @@ function CheckoutPage() {
         <h1 className="mt-4 font-serif text-5xl leading-[1.05] md:text-6xl">Pembayaran</h1>
       </div>
 
-      <form onSubmit={onSubmit} className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24">
+      <form onSubmit={onSubmit} className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-24 overflow-hidden">
         <div className="space-y-14">
 
           <Section title="Informasi Penerima">
@@ -374,41 +374,33 @@ function CheckoutPage() {
 
             
 
-            <ul className="mt-6 space-y-5">
-              {resolved.map((item) => (
-                <li key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
-                  <div
-  className="
-    h-24
-    w-20
-    flex-shrink-0
-    overflow-hidden
-    bg-surface
-  "
->
-                    <img
-  src={item.product.thumbnail || item.product.images?.[0]}
-  alt=""
-  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-/>
-                  </div>
-                  <div className="flex flex-1 flex-col justify-between text-sm">
-                    <div>
-                      <div className="font-serif text-base leading-tight">{item.product.name}</div>
-                      <div className="mt-1 text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">
-                        {item.size && <span>{item.size}</span>}
-                        {item.size && item.color && <span> · </span>}
-                        {item.color && <span>{item.color}</span>}
-                        <span> · x{item.qty}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="tabular-nums text-sm">
-                    Rp {(resolvePrice(item.product, item.color, item.size) * item.qty).toLocaleString("id-ID")}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <ul className="mt-6 space-y-4">
+  {resolved.map((item) => (
+    <li key={`${item.id}-${item.size}-${item.color}`} className="flex gap-3">
+      <div className="h-20 w-16 shrink-0 overflow-hidden bg-surface">
+        <img
+          src={item.product.thumbnail || item.product.images?.[0]}
+          alt=""
+          className="h-full w-full object-cover"
+        />
+      </div>
+      <div className="flex flex-1 min-w-0 flex-col justify-between">
+        <div className="min-w-0">
+          <div className="font-serif text-sm leading-snug line-clamp-2">{item.product.name}</div>
+          <div className="mt-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted-foreground">
+            {item.size && <span>{item.size}</span>}
+            {item.size && item.color && <span> · </span>}
+            {item.color && <span>{item.color}</span>}
+            <span> · x{item.qty}</span>
+          </div>
+        </div>
+        <div className="tabular-nums text-sm mt-1">
+          Rp {(resolvePrice(item.product, item.color, item.size) * item.qty).toLocaleString("id-ID")}
+        </div>
+      </div>
+    </li>
+  ))}
+</ul>
 
             <div className="mt-8 border-t hairline pt-6">
   <div className="eyebrow mb-4">Kode Voucher</div>

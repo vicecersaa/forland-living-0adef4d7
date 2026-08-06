@@ -346,61 +346,58 @@ const hasMore = specLines.length > 4 || paragraphLines.length > 2;
                   <div className="eyebrow text-foreground/60">Varian</div>
                   <div className="text-[0.78rem] text-foreground/50 truncate max-w-[60%] text-right">{selectedVariant}</div>
                 </div>
-                <div className={variants.some((v: Variant) => v.thumbnail) ? "grid grid-cols-2 gap-2 sm:grid-cols-4" : "flex flex-wrap gap-2"}>
+                <div className={variants.some((v: Variant) => v.image) ? "grid grid-cols-2 gap-2 sm:grid-cols-4" : "flex flex-wrap gap-2"}>
                   {variants.map((v: Variant) => {
                     const active = selectedVariant === v.name;
-                    return v.thumbnail ? (
-                      // Variant dengan gambar — subtle hover scale + ring premium
-                      <button
-                        key={v.name}
-                        onClick={() => setSelectedVariant(v.name)}
-                        className={
-                          "group flex flex-col overflow-hidden text-left transition-all duration-200 " +
-                          (active
-                            ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
-                            : "ring-1 ring-foreground/15 hover:ring-foreground/40")
-                        }
-                      >
-                        <div className="relative aspect-square w-full bg-surface overflow-hidden">
-                          <SmartImage
-                            src={v.thumbnail}
-                            alt={v.name}
-                            className={"absolute inset-0 h-full w-full object-cover transition-transform duration-300 " + (active ? "" : "group-hover:scale-[1.03]")}
-                            loading="lazy"
-                          />
-                          {active && (
-                            <div className="absolute inset-0 bg-foreground/5" />
-                          )}
-                        </div>
-                        <div className="px-2.5 py-2 border-t border-foreground/10">
-                          <div className={"truncate text-[0.72rem] font-medium tracking-wide " + (active ? "text-foreground" : "text-foreground/60")}>
-                            {v.name}
-                          </div>
-                          {v.sku && (
-                            <div className="mt-0.5 truncate text-[0.65rem] text-foreground/30">{v.sku}</div>
-                          )}
-                        </div>
-                      </button>
-                    ) : (
-                      // Variant tanpa gambar — pill/chip style lebih halus
-                      <button
-                        key={v.name}
-                        onClick={() => setSelectedVariant(v.name)}
-                        className={
-                          "relative px-4 py-2.5 text-left transition-all duration-150 text-sm overflow-hidden " +
-                          (active
-                            ? "bg-foreground text-background"
-                            : "border border-foreground/15 text-foreground hover:border-foreground/50 hover:bg-foreground/[0.03]")
-                        }
-                      >
-                        <div className="font-medium text-[0.82rem]">{v.name}</div>
-                        {v.sku && (
-                          <div className={"mt-0.5 text-[0.63rem] tracking-wide " + (active ? "text-background/60" : "text-foreground/30")}>
-                            {v.sku}
-                          </div>
-                        )}
-                      </button>
-                    );
+                    return v.image ? (
+  <button
+    key={v.name}
+    onClick={() => setSelectedVariant(v.name)}
+    className={
+      "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-left w-full " +
+      (active
+        ? "ring-2 ring-foreground ring-offset-2 ring-offset-background bg-foreground/[0.02]"
+        : "ring-1 ring-foreground/12 hover:ring-foreground/30 hover:bg-foreground/[0.02]")
+    }
+  >
+    <div className="relative h-10 w-10 shrink-0 overflow-hidden bg-surface">
+      <SmartImage
+        src={v.image}
+        alt={v.name}
+        className="absolute inset-0 h-full w-full object-cover"
+        loading="lazy"
+      />
+    </div>
+    <div className="min-w-0 flex-1">
+      <div className={" text-[0.72rem] font-medium tracking-wide " + (active ? "text-foreground" : "text-foreground/60")}>
+        {v.name}
+      </div>
+      {v.sku && (
+        <div className="mt-0.5 truncate text-[0.62rem] text-foreground/30">{v.sku}</div>
+      )}
+    </div>
+    {active && (
+      <div className="h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
+    )}
+  </button>
+) : (
+  <button
+    key={v.name}
+    onClick={() => setSelectedVariant(v.name)}
+    className={
+      "relative text-left transition-all duration-150 overflow-hidden " +
+      (active
+        ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
+        : "ring-1 ring-foreground/15 hover:ring-foreground/40")
+    }
+  >
+    <div className="px-2.5 py-2">
+      <div className={"truncate text-[0.72rem] font-medium tracking-wide " + (active ? "text-foreground" : "text-foreground/60")}>
+        {v.name}
+      </div>
+    </div>
+  </button>
+);
                   })}
                 </div>
               </div>
@@ -456,7 +453,7 @@ const hasMore = specLines.length > 4 || paragraphLines.length > 2;
                 }}
                 className="flex-1 bg-foreground py-4 text-[0.78rem] tracking-[0.24em] uppercase text-background transition-opacity hover:opacity-90"
               >
-                Tambah ke Keranjang
+                Tambah Keranjang
               </button>
             </div>
 

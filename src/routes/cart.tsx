@@ -42,8 +42,8 @@ function resolveThumbnail(product: Product, color: string): string {
       (v) => v.name === color
     );
 
-    if (variant?.thumbnail) {
-      return variant.thumbnail;
+    if (variant?.image) {  // ganti thumbnail → image
+      return variant.image;  // ganti thumbnail → image
     }
   }
 
@@ -82,135 +82,68 @@ function CartPage() {
           <ul className="border-t hairline">
             {resolved.map((item, i) => (
               <li
-                key={`${item.id}-${item.size}-${item.color}`}
-                className="
-  group
-  grid
-  grid-cols-[96px_1fr]
-  gap-4
-  border-b
-  hairline
-  py-6
-  pr-2
-  transition-colors
-  hover:bg-foreground/[0.015]
-  sm:grid-cols-[140px_1fr]
-  sm:gap-6
-  sm:pr-4
-  lg:grid-cols-[160px_1fr_auto]
-  lg:gap-8
-  lg:py-8
-  lg:pr-6
-"
-              >
-                <Link to="/products/$slug" params={{ slug: item.product.slug }} className="block aspect-[4/5] bg-surface">
-                  <img
-                    src={resolveThumbnail(item.product, item.color)}
-  alt={item.product.name}
-  className="h-full w-full object-cover"
-
-                  />
-                </Link>
-
-                <div className="flex min-w-0 flex-col justify-between">
-                  <div className="min-w-0">
-                    <div className="eyebrow">{item.product.category?.name}</div>
-                    <Link
-                      to="/products/$slug"
-                      params={{ slug: item.product.slug }}
-                      className="mt-2 block truncate font-serif text-lg leading-tight hover:opacity-70 sm:text-2xl"
-                    >
-                      {item.product.name}
-                    </Link>
-                    <div className="mt-2 text-[0.78rem] tracking-[0.16em] uppercase text-muted-foreground">
-                      {item.size && <span>{item.size}</span>}
-                      {item.size && item.color && <span> · </span>}
-                      {item.color && <span>{item.color}</span>}
-                    </div>
-                    
-                    <div className="hidden mt-2 tabular-nums lg:block">
-                  Rp {(resolvePrice(item.product, item.color, item.size) * item.qty).toLocaleString("id-ID")}
-                </div>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <div className="
-  flex
-  items-center
-  border
-  border-foreground/15
-  h-10
-">
-  <button
-    onClick={() => update(i, item.qty - 1)}
-    aria-label="Decrease"
-    className="
-      h-full
-      px-3
-      text-foreground/50
-      hover:text-foreground
-      hover:bg-foreground/[0.04]
-      transition-colors
-    "
-  >
-    <Minus className="h-3.5 w-3.5" />
-  </button>
-
-  <span className="
-    w-10
-    text-center
-    text-sm
-    tabular-nums
-    font-medium
-  ">
-    {item.qty}
-  </span>
-
-  
-
-  <button
-    onClick={() => update(i, item.qty + 1)}
-    aria-label="Increase"
-    className="
-      h-full
-      px-3
-      text-foreground/50
-      hover:text-foreground
-      hover:bg-foreground/[0.04]
-      transition-colors
-    "
-  >
-    <Plus className="h-3.5 w-3.5" />
-  </button>
-</div>
-  <button
-  onClick={() => remove(i)}
-  className="
-    inline-flex
-    h-10
-    items-center
-    gap-2
-    border
-    border-foreground/15
-    px-4
-    text-[0.72rem]
-    tracking-[0.18em]
-    uppercase
-    text-foreground/60
-    transition-all
-    hover:border-foreground/40
-    hover:text-foreground
-    hover:bg-foreground/[0.03]
-  "
+  key={`${item.id}-${item.size}-${item.color}`}
+  className="flex gap-4 border-b hairline py-5 sm:py-6"
 >
-  <X className="h-3.5 w-3.5" />
-  Hapus
-</button>
-                  </div>
-                </div>
+  <Link to="/products/$slug" params={{ slug: item.product.slug }} className="relative h-24 w-20 shrink-0 bg-surface overflow-hidden sm:h-32 sm:w-24">
+    <img
+      src={resolveThumbnail(item.product, item.color)}
+      alt={item.product.name}
+      className="h-full w-full object-cover"
+    />
+  </Link>
 
-                
-              </li>
+  <div className="flex flex-1 min-w-0 flex-col justify-between">
+    <div className="min-w-0">
+      <div className="eyebrow text-[0.62rem]">{item.product.category?.name}</div>
+      <Link
+        to="/products/$slug"
+        params={{ slug: item.product.slug }}
+        className="mt-1 block font-serif text-base leading-tight hover:opacity-70 sm:text-lg"
+      >
+        {item.product.name}
+      </Link>
+      <div className="mt-1 text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground">
+        {item.size && <span>{item.size}</span>}
+        {item.size && item.color && <span> · </span>}
+        {item.color && <span>{item.color}</span>}
+      </div>
+      <div className="mt-2 text-sm tabular-nums font-medium">
+        Rp {(resolvePrice(item.product, item.color, item.size) * item.qty).toLocaleString("id-ID")}
+      </div>
+    </div>
+
+    <div className="mt-3 flex items-center justify-between">
+      <div className="flex items-center border border-foreground/15 h-9">
+        <button
+          onClick={() => update(i, item.qty - 1)}
+          aria-label="Decrease"
+          className="h-full px-3 text-foreground/50 hover:text-foreground hover:bg-foreground/[0.04] transition-colors"
+        >
+          <Minus className="h-3 w-3" />
+        </button>
+        <span className="w-8 text-center text-sm tabular-nums font-medium">
+          {item.qty}
+        </span>
+        <button
+          onClick={() => update(i, item.qty + 1)}
+          aria-label="Increase"
+          className="h-full px-3 text-foreground/50 hover:text-foreground hover:bg-foreground/[0.04] transition-colors"
+        >
+          <Plus className="h-3 w-3" />
+        </button>
+      </div>
+
+      <button
+        onClick={() => remove(i)}
+        className="flex items-center gap-1.5 text-[0.68rem] tracking-[0.16em] uppercase text-foreground/40 hover:text-foreground transition-colors"
+      >
+        <X className="h-3 w-3" />
+        Hapus
+      </button>
+    </div>
+  </div>
+</li>
             ))}
           </ul>
 

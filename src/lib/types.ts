@@ -8,12 +8,12 @@ export interface Size {
 export interface Variant {
   name: string;
   sku: string;
-  thumbnail?: string;
-  price?: number; // kalau ada variant tanpa size
+  image?: string;      // ganti thumbnail → image
+  imageKey?: string;   // tambahkan ini juga
+  price?: number;
   stock?: number;
   sizes: Size[];
 }
-
 export interface Product {
   _id: string;
 

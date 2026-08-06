@@ -20,7 +20,10 @@ export interface Product {
 export interface Variant {
   name: string;
   sku: string;
-  thumbnail?: string;
+  image?: string;
+  imageKey?: string;
+  price?: number;
+  stock?: number;
   sizes: Size[];
 }
 

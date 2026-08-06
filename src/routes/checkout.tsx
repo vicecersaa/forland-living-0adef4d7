@@ -283,7 +283,7 @@ function CheckoutPage() {
 
           <Section title="Alamat Pengiriman">
             <Field label="Alamat Lengkap" name="address" value={form.address} onChange={handleChange} required disabled={isFromLink} />
-            <div className="grid gap-6 sm:grid-cols-2 relative min-w-0 overflow-hidden">
+            <div className="grid gap-6 sm:grid-cols-2 relative min-w-0 ">
               <Field label="Kecamatan" name="district" value={form.district} onChange={handleChange} required disabled={isFromLink} />
               {/* Fix #1 — ongkir update saat pilih kota */}
               <CitySelect

@@ -156,7 +156,7 @@ const isAuth = authRoutes.some((route) =>
           ) : isAuth ? (
             <Outlet />
           ) : (
-            <div className="flex min-h-screen flex-col">
+            <div className="flex min-h-screen flex-col overflow-x-hidden">
               <SiteNav />
               <main className="flex-1">
                 {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}

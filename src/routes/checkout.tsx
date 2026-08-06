@@ -503,7 +503,7 @@ function CitySelect({
   }, []);
 
  return (
-  <div ref={ref} className="relative block w-full">
+  <div ref={ref} className="relative block w-full min-w-0">
       <span className="eyebrow block">Kota</span>
       <button
   type="button"
@@ -512,11 +512,12 @@ function CitySelect({
   className="
     mt-3
     w-full
+    min-w-0
     border
     border-foreground/15
     bg-background
-    px-5
-    py-4
+    px-4
+    py-3
     text-left
     flex
     items-center

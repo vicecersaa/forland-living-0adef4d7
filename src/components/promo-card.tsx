@@ -102,7 +102,7 @@ export function PromoCard() {
           </div>
 
           <div className="text-center text-[0.8rem] mt-4 tracking-[0.35em] text-foreground/80">
-  Nikmati diskon eksklusif untuk pembelian di Forland Living.
+  Diskon eksklusif Forland Living.
 </div>
           <Link
             to="/shop"

@@ -378,10 +378,14 @@ function CheckoutPage() {
     <li key={`${item.id}-${item.size}-${item.color}`} className="flex gap-3">
       <div className="h-20 w-16 shrink-0 overflow-hidden bg-surface">
         <img
-          src={item.product.thumbnail || item.product.images?.[0]}
-          alt=""
-          className="h-full w-full object-cover"
-        />
+  src={
+    item.product.variants?.find(v => v.name === item.color)?.image
+    || item.product.thumbnail
+    || item.product.images?.[0]
+  }
+  alt=""
+  className="h-full w-full object-contain"
+/>
       </div>
       <div className="flex flex-1 min-w-0 flex-col justify-between">
         <div className="min-w-0">

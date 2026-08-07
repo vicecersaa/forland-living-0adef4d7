@@ -72,10 +72,11 @@ function ProductPage() {
   const { add } = useCart();
   const navigate = useNavigate();
 
-  // FIX #6: Susun mediaItems dengan thumbnail sebagai gambar pertama jika belum ada di images
   const rawImages = product.images?.length ? product.images : [];
-  // Pastikan thumbnail selalu jadi elemen pertama kalau belum ada di array images
-  const imagesWithThumbnail = product.thumbnail
+  const variantImage = activeVariant?.image ?? null;
+  const imagesWithThumbnail = variantImage
+  ? [variantImage, ...rawImages.filter((img) => img !== variantImage)]
+  : product.thumbnail
   ? [product.thumbnail, ...rawImages.filter((img) => img !== product.thumbnail)]
   : rawImages;
 
@@ -89,6 +90,10 @@ function ProductPage() {
   useEffect(() => {
     setSelectedSize(activeVariant?.sizes?.[0]?.name ?? "");
   }, [selectedVariant]);
+
+  useEffect(() => {
+  setActiveImage(0);
+}, [selectedVariant]);
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/products?limit=4`)
@@ -346,7 +351,7 @@ const hasMore = specLines.length > 4 || paragraphLines.length > 2;
                   <div className="eyebrow text-foreground/60">Varian</div>
                   <div className="text-[0.78rem] text-foreground/50 truncate max-w-[60%] text-right">{selectedVariant}</div>
                 </div>
-                <div className={variants.some((v: Variant) => v.image) ? "grid grid-cols-2 gap-2 sm:grid-cols-4" : "flex flex-wrap gap-2"}>
+                <div className={variants.some((v: Variant) => v.image) ? "grid grid-cols-3 gap-2 sm:grid-cols-4" : "flex flex-wrap gap-2"}>
                   {variants.map((v: Variant) => {
                     const active = selectedVariant === v.name;
                     return v.image ? (
@@ -354,13 +359,13 @@ const hasMore = specLines.length > 4 || paragraphLines.length > 2;
     key={v.name}
     onClick={() => setSelectedVariant(v.name)}
     className={
-      "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-left w-full " +
+      "flex items-center gap-2 px-2 py-2 transition-all duration-200 text-left w-full " +
       (active
         ? "ring-2 ring-foreground ring-offset-2 ring-offset-background bg-foreground/[0.02]"
         : "ring-1 ring-foreground/12 hover:ring-foreground/30 hover:bg-foreground/[0.02]")
     }
   >
-    <div className="relative h-10 w-10 shrink-0 overflow-hidden bg-surface">
+    <div className="relative h-8 w-8 shrink-0 overflow-hidden bg-surface">
       <SmartImage
         src={v.image}
         alt={v.name}
@@ -368,8 +373,8 @@ const hasMore = specLines.length > 4 || paragraphLines.length > 2;
         loading="lazy"
       />
     </div>
-    <div className="min-w-0 flex-1">
-      <div className={" text-[0.72rem] font-medium tracking-wide " + (active ? "text-foreground" : "text-foreground/60")}>
+    <div className="min-w-0 flex-1 overflow-hidden">
+  <div className={"text-[0.72rem] font-medium tracking-wide line-clamp-2 leading-snug break-words " + (active ? "text-foreground" : "text-foreground/60")}>
         {v.name}
       </div>
       {v.sku && (

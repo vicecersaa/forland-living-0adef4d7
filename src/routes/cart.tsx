@@ -85,12 +85,12 @@ function CartPage() {
   key={`${item.id}-${item.size}-${item.color}`}
   className="flex gap-4 border-b hairline py-5 sm:py-6"
 >
-  <Link to="/products/$slug" params={{ slug: item.product.slug }} className="relative h-24 w-20 shrink-0 bg-surface overflow-hidden sm:h-32 sm:w-24">
+  <Link to="/products/$slug" params={{ slug: item.product.slug }} className="relative aspect-square h-24 w-24 shrink-0 bg-surface overflow-hidden sm:h-28 sm:w-28">
     <img
-      src={resolveThumbnail(item.product, item.color)}
-      alt={item.product.name}
-      className="h-full w-full object-cover"
-    />
+  src={resolveThumbnail(item.product, item.color)}
+  alt={item.product.name}
+  className="h-full w-full object-contain"
+/>
   </Link>
 
   <div className="flex flex-1 min-w-0 flex-col justify-between">

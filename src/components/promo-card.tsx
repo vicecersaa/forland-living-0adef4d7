@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Copy, Check } from "lucide-react";
+import { X, Copy } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
@@ -11,11 +11,7 @@ interface PromoCoupon {
 
 export function PromoCard() {
   const [visible, setVisible] = useState(false);
-  const [promo, setPromo] = useState<PromoCoupon>({
-    code: "FORLAND10",
-    discount: 10,
-    label: "Untuk semua produk pilihan",
-  });
+  const [promo, setPromo] = useState<PromoCoupon | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -27,13 +23,15 @@ export function PromoCard() {
       if (diffDays < INTERVAL_DAYS) return;
     }
 
-    // Uncomment kalau backend sudah siap:
-    // fetch(`${import.meta.env.VITE_API_URL}/admin/coupons/popup`)
-    //   .then((r) => r.json())
-    //   .then((json) => { if (json?.data) setPromo(json.data); })
-    //   .catch(() => {});
-
-    setTimeout(() => setVisible(true), 900);
+    fetch(`${import.meta.env.VITE_API_URL}/coupons/popup`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json?.data) {
+          setPromo(json.data);
+          setTimeout(() => setVisible(true), 900);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const dismiss = () => {
@@ -42,15 +40,18 @@ export function PromoCard() {
   };
 
   const copyCode = () => {
-  navigator.clipboard.writeText(promo.code).then(() => {
-    toast.success("Kode berhasil disalin!", {
-      description: `${promo.code} siap dipakai di checkout.`,
-      duration: 2500,
+    if (!promo) return;
+    navigator.clipboard.writeText(promo.code).then(() => {
+      setCopied(true);
+      toast.success("Kode berhasil disalin!", {
+        description: `${promo.code} siap dipakai di checkout.`,
+        duration: 2500,
+      });
+      setTimeout(() => setCopied(false), 2000);
     });
-  });
-};
+  };
 
-  if (!visible) return null;
+  if (!visible || !promo) return null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-5">
@@ -79,27 +80,30 @@ export function PromoCard() {
             <div className="font-serif text-[4.5rem] leading-none font-medium text-foreground">
               {promo.discount}%
             </div>
-            {/* label — dinamis dari backend */}
-            <div className="mt-2 text-[0.7rem] uppercase tracking-[0.25em] text-foreground/70">
-              {promo.label}
-            </div>
+            {promo.label && (
+              <div className="mt-2 text-[0.7rem] uppercase tracking-[0.25em] text-foreground/70">
+                {promo.label}
+              </div>
+            )}
 
-            {/* code — dinamis dari backend */}
             <div className="mt-6 inline-flex items-center gap-4 border border-foreground/20 bg-white px-6 py-3">
               <span className="font-mono text-base font-semibold tracking-[0.2em] text-foreground">
                 {promo.code}
               </span>
               <button
-  type="button"
-  onClick={copyCode}
-  aria-label="Salin kode"
-  className="transition-colors"
->
-  <Copy className="h-4 w-4 text-foreground/60 hover:text-foreground" strokeWidth={1.5} />
-</button>
+                type="button"
+                onClick={copyCode}
+                aria-label="Salin kode"
+                className="transition-colors"
+              >
+                <Copy className="h-4 w-4 text-foreground/60 hover:text-foreground" strokeWidth={1.5} />
+              </button>
             </div>
           </div>
 
+          <div className="text-center text-[0.8rem] mt-4 tracking-[0.35em] text-foreground/80">
+  Nikmati diskon eksklusif untuk pembelian di Forland Living.
+</div>
           <Link
             to="/shop"
             search={{ q: undefined }}

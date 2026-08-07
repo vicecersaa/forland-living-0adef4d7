@@ -33,49 +33,30 @@ const columns: { title: string; links: { label: string; to: string }[] }[] = [
 const socials = [
   {
     name: "Instagram",
-    href: "#",
+    href: "https://www.instagram.com/forland.living",
     icon: (
       <svg viewBox="0 0 24 24" fill="none">
-        <rect
-          x="3"
-          y="3"
-          width="18"
-          height="18"
-          rx="5"
-          stroke="currentColor"
-          strokeWidth="1.8"
-        />
-        <circle
-          cx="12"
-          cy="12"
-          r="4"
-          stroke="currentColor"
-          strokeWidth="1.8"
-        />
+        <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="1.8" />
+        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
         <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
       </svg>
     ),
   },
   {
-    name: "Facebook",
-    href: "#",
+    name: "TikTok",
+    href: "https://www.tiktok.com/@forlandliving?_r=1&_t=ZS-98eNWF6WicZ",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M14 8h3V4h-3c-3.3 0-5 2-5 5v3H6v4h3v4h4v-4h3l1-4h-4V9c0-.7.3-1 1-1z" />
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z" />
       </svg>
     ),
   },
   {
-    name: "Threads",
-    href: "#",
+    name: "Shopee",
+    href: "https://www.instagram.com/forland.living?igsh=MXMwbWV2cXJ2MzBxdA==",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none">
-        <path
-          d="M12 5c-3.7 0-6 2.1-6 5.5 0 3.8 2.7 6.5 6.4 6.5 3 0 5-1.7 5-4.1 0-2.2-1.7-3.8-4.1-3.8-2 0-3.3 1.1-3.3 2.6 0 1.2 1 2 2.3 2"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-        />
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2a4 4 0 0 0-4 4H5a1 1 0 0 0-1 1l-1 13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1L20 7a1 1 0 0 0-1-1h-3a4 4 0 0 0-4-4zm0 2a2 2 0 0 1 2 2h-4a2 2 0 0 1 2-2zm0 8a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
       </svg>
     ),
   },
@@ -105,6 +86,8 @@ export function SiteFooter() {
                   key={social.name}
                   href={social.href}
                   aria-label={social.name}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="
                     flex
                     h-10

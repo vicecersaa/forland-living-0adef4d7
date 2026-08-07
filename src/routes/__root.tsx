@@ -17,8 +17,8 @@ import { SiteFooter } from "../components/site-footer";
 import { CartProvider } from "../lib/cart";
 import { AuthProvider } from "../lib/auth";
 import { WhatsAppFab } from "../components/whatsapp-fab";
-import { CookieConsent } from "../components/cookie-consent";
 import { Toaster } from "sonner";
+import { PromoCard } from "../components/promo-card";
 
 function NotFoundComponent() {
   return (
@@ -166,7 +166,7 @@ const isAuth = authRoutes.some((route) =>
               <WhatsAppFab />
             </div>
           )}
-          {!isAdmin && !isAuth && <CookieConsent />}
+          {!isAdmin && !isAuth && pathname === "/" && <PromoCard />}
           <Toaster
             position="top-right"
             richColors={false}

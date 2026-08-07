@@ -251,7 +251,7 @@ const hasMore = specLines.length > 4 || paragraphLines.length > 2;
             <h1 className="mt-3 font-serif text-2xl leading-[1.1] md:text-[2.6rem] break-words">{product.name}</h1>
 
             {/* FIX #2: Harga lebih bold dan sedikit lebih besar */}
-            <div className="mt-5 text-2xl font-semibold tabular-nums tracking-tight">
+            <div className="mt-5 text-2xl tabular-nums tracking-tight">
               Rp {currentPrice.toLocaleString("id-ID")}
             </div>
 

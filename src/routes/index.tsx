@@ -249,14 +249,14 @@ function PromoBanner() {
                       <SmartImage
                         src={banner.image}
                         alt=""
-                        className="h-full w-full object-cover object-center"
+                        className="h-full w-full object-contain object-center"
                       />
                     </a>
                   ) : (
                     <SmartImage
                       src={banner.image}
                       alt=""
-                      className="h-full w-full object-cover object-center"
+                      className="h-full w-full object-contain object-center"
                     />
                   )}
                 </div>
@@ -792,12 +792,13 @@ function Categories({ hp }: { hp: HomepageData | null }) {
               */
               className="
                 group
-                relative
-                flex-shrink-0
-                w-[78vw]
-                snap-start
-                overflow-hidden
-                bg-surface
+        relative
+        flex-shrink-0
+        w-[calc(100vw-3rem)]
+        scroll-pl-6
+        snap-start
+        overflow-hidden
+        bg-surface
               "
             >
               <div className="relative aspect-[3/4] w-full">
@@ -834,7 +835,7 @@ function Categories({ hp }: { hp: HomepageData | null }) {
           ))}
 
           {/* ghost item — beri ruang di akhir supaya kartu terakhir bisa snap ke kiri */}
-          <div className="flex-shrink-0 w-2" aria-hidden />
+          <div className="flex-shrink-0 w-6" aria-hidden />
         </div>
 
         {/* dot indicator */}

@@ -145,7 +145,7 @@ function Hero({ hp }: { hp: HomepageData | null }) {
           <div className="eyebrow !text-background/80">
             {hero?.badge || "Koleksi Aera — Musim Semi"}
           </div>
-          <h1 className="mt-6 font-serif text-[clamp(2.75rem,6.5vw,6rem)] leading-[1.02] tracking-[-0.02em]">
+          <h1 className="mt-6 font-serif text-[clamp(2.75rem,6.5vw,6rem)] leading-[1.02] tracking-[-0.02em] text-background/80">
             {hero?.title
               ? hero.title.split("\n").map((line, i, arr) => (
                   <span key={i}>
@@ -249,14 +249,14 @@ function PromoBanner() {
                       <SmartImage
                         src={banner.image}
                         alt=""
-                        className="h-full w-full object-contain object-center"
+                        className="h-full w-full object-contain sm:object-cover object-center"  // ← ganti ini
                       />
                     </a>
                   ) : (
                     <SmartImage
                       src={banner.image}
                       alt=""
-                      className="h-full w-full object-contain object-center"
+                      className="h-full w-full object-contain sm:object-cover object-center"  // ← dan ini
                     />
                   )}
                 </div>
@@ -339,7 +339,7 @@ function BestsellerProducts() {
     price > 0 ? "Rp " + price.toLocaleString("id-ID") : "Hubungi kami";
 
   return (
-    <section className="mx-auto max-w-[1600px] px-6 py-20 lg:px-12 lg:py-28">
+    <section className="mx-auto max-w-[1600px] px-6 pt-20 pb-6 lg:px-12 lg:py-28">
       <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
         <div>
           <div className="eyebrow">Paling Dicari</div>
@@ -475,7 +475,7 @@ function PromoCards() {
     price > 0 ? `Rp ${price.toLocaleString("id-ID")}` : "Hubungi kami";
 
   return (
-    <section className="mx-auto max-w-[1600px] px-6 py-20 lg:px-12 lg:py-28">
+    <section className="mx-auto max-w-[1600px] px-6 pt-6 pb-20 lg:px-12 lg:py-28">
       <div className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b hairline pb-8">
         <div>
           <div className="eyebrow">Koleksi Terpilih</div>
@@ -772,8 +772,8 @@ function Categories({ hp }: { hp: HomepageData | null }) {
             flex gap-3
             overflow-x-auto scroll-smooth
             snap-x snap-mandatory
-            pl-6
-            pr-6
+            scroll-pl-6
+            pl-6 pr-3
             pb-4
             [scrollbar-width:none]
             [&::-webkit-scrollbar]:hidden
@@ -792,13 +792,12 @@ function Categories({ hp }: { hp: HomepageData | null }) {
               */
               className="
                 group
-        relative
-        flex-shrink-0
-        w-[calc(100vw-3rem)]
-        scroll-pl-6
-        snap-start
-        overflow-hidden
-        bg-surface
+                relative
+                flex-shrink-0
+                w-[calc(100vw-6rem)]  
+                snap-start
+                overflow-hidden
+                bg-surface
               "
             >
               <div className="relative aspect-[3/4] w-full">
